@@ -26,7 +26,7 @@ Re-check them against the live docs when the SDK is installed (see R-14).
   - `output_config={"effort": "low", "format": {"type": "json_schema", "schema": <API schema>}}`
   - **no `temperature` parameter**
 
-  The `temperature` config key defaults to `null`, which means not sent. Evidence records it as `temperature: null (not sent; model default)`.
+  The `temperature` config key defaults to `null`, which means not sent, so the model default applies. Evidence records it as `temperature: null (not sent; model default)`. The owner confirmed this, and it is recorded in spec Assumptions and Change Log v1.2.
 - **Rationale**:
   - **Temperature**: Claude Haiku 5.5 rejects non-default sampling parameters with HTTP 400. On API version `2023-06-01`, only `temperature=1` is accepted. On `2026-10-21`, any `temperature` is rejected. The requested `temperature 0` cannot be sent. The constitution only requires temperature to be configurable and recorded, and that still holds: a non-null value is passed through, and the API decides whether to accept it. Reproducibility comes from replay mode (Constitution X), not from sampling settings.
   - **Thinking**: Haiku 5.5 thinks by default, and thinking tokens count toward `max_tokens`. With the constitutional cap of 300, thinking could use up the budget before any JSON is produced. Disabled thinking is accepted at effort `low`/`medium`/`high`.
@@ -129,9 +129,9 @@ Re-check them against the live docs when the SDK is installed (see R-14).
   - `layer1_schema.py`: JSON Schema validation plus ISO-8601 parse of `due_at`. It returns a list of violations, each tagged `FR-005`/`FR-006`.
   - `layer2_invariants.py`: an independent re-implementation of FR-008 to FR-013, one function per invariant, each returning its FR ID.
   - `layer3_semantic.py`: the FR-036 formula with whole-word keyword matching (R-12).
-  - `aggregate.py`: the FR-037/038/039/044 verdict.
+  - `aggregate.py`: the fallback check (FR-045, run first) and the FR-037/038/039/044 verdict.
 
-  Each `CaseResult` records `failed_layer` (`schema`/`invariant`/`semantic`/null), `violations: [{"id":"FR-009","message":"due_at 2026-11-10T09:00+05:30 < now 2026-11-10T10:00+05:30"}]`, the semantic components and the `requirements` covered. These records are written for feedback to the coding agent.
+  Each `CaseResult` records `failed_layer` (`fallback`/`schema`/`invariant`/`semantic`/null), `violations: [{"id":"FR-009","message":"due_at 2026-11-10T09:00+05:30 < now 2026-11-10T10:00+05:30"}]`, the semantic components and the `requirements` covered. These records are written for feedback to the coding agent.
 - **Rationale**: The plan input explicitly asks for this. Constitution VI requires layered checks with no LLM judge. The harness re-implements invariants instead of importing the agent's, so a bug in the agent's guard can't hide itself.
 
 ## R-12 Keyword recall matching rule
@@ -158,7 +158,12 @@ Re-check them against the live docs when the SDK is installed (see R-14).
 - The live pricing page still shows $0.10 / $0.50 per MTok for Claude Haiku 5.5, and `config/settings.toml` is updated if it differs.
 - The installed SDK's error class names match R-06.
 
-## R-15 Open spec decision carried from the clarify session
+## R-15 Scoring of fallback decisions (resolved by the owner, 2026-11-07)
 
-- **Decision (provisional, follows the spec as written)**: A fallback-clarify decision is scored **like any other decision**. It can pass a case whose expected intent is `clarify`. Every fallback is flagged per case (`fallback: true`) and counted in the run report.
-- **Pending owner decision**: The clarify question "Can a fallback decision pass a case expecting `clarify`?" was not answered. The recommendation was that a fallback always fails (layer `fallback`). Adopting it needs a spec change (a new FR plus AC, and an Evaluation Change Log entry) before the first evaluation run. In the code it is a one-line rule in `aggregate.py`.
+- **Decision**: A fallback clarify decision **always counts as a failed case**, whatever the expected intent. It is recorded as `status: "fail"`, `failed_layer: "fallback"`, `fallback: true` and the `fallback_reason` (spec FR-045, AC-60, Change Log v1.2).
+  - The check runs in `aggregate.py` before layers 1 to 3, which are skipped for that case.
+  - The case stays in the pass-rate denominator. On a guardrail case, it fails the 100% guardrail condition.
+- **Rationale**: A fallback means the model output was invalid. Letting it pass `clarify`-expected cases (ambiguous, missing-field and malformed) would reward broken output and inflate the pass rate (Constitution V).
+- **Alternatives**:
+  - Scoring the fallback like any other decision was rejected because it inflates the pass rate.
+  - Scoring normally with a separate fallback-count limit was rejected as more complex, and it still lets individual broken cases pass.

@@ -129,10 +129,10 @@ One entry in `evals/dataset.json` (FR-033; [contracts/dataset.schema.json](contr
 |-------|------|-------|
 | `case_id`, `category`, `requirements` | | Copied from the case. |
 | `status` | `"pass" \| "fail" \| "input_error" \| "infra_error" \| "not_run"` | `not_run` applies only after a cost abort. |
-| `failed_layer` | `"schema" \| "invariant" \| "semantic" \| null` | The first failing layer (FR-035). |
+| `failed_layer` | `"fallback" \| "schema" \| "invariant" \| "semantic" \| null` | `fallback` is set whenever the agent substituted the fallback decision (FR-045), checked before the layers. Otherwise it is the first failing layer (FR-035). |
 | `violations` | `list[{id, message}]` | `id` is the FR or invariant ID, for feedback to the coding agent. |
 | `semantic` | `{intent, due_at, keywords, recall, score}` or `null` | Present only if layer 3 ran. |
-| `fallback` / `fallback_reason` | | From AgentOutcome (research R-15). |
+| `fallback` / `fallback_reason` | | From AgentOutcome. `fallback: true` always means `status: "fail"` (FR-045, research R-15). |
 | `decision` / `error` | | The agent's output. |
 | `raw_response_ref` | `str` | Path of the saved raw reply. |
 | `attempts`, `input_tokens`, `output_tokens`, `cost_usd` | | |
@@ -141,7 +141,7 @@ One entry in `evals/dataset.json` (FR-033; [contracts/dataset.schema.json](contr
 
 This is defined in full in [contracts/eval_results.schema.json](contracts/eval_results.schema.json). It holds:
 
-- run metadata: `run_id`, `timestamp_utc`, `mode` (`live`/`replay`), `source_run_id` for replays, model config including `temperature` as sent, `schema_version`, `prompt_version`, `dataset_sha256`, and `pricing`
+- run metadata: `run_id`, `timestamp_utc`, `mode` (`live`/`replay`), `source_run_id` for replays, model config including `temperature` (`null` = not sent, model default), `schema_version`, `prompt_version`, `dataset_sha256`, and `pricing`
 - `threshold`: `{min_pass_rate: 0.85, guardrail_pass_rate: 1.0, max_infra_errors: 2, semantic_pass_mark: 0.9}`
 - `cases: [CaseResult]`
 - `totals`: `{total, passed, failed, input_error, infra_error, not_run, fallbacks, pass_rate, guardrail_passed, guardrail_total}`
@@ -149,9 +149,14 @@ This is defined in full in [contracts/eval_results.schema.json](contracts/eval_r
 - `aborted` and `abort_reason`
 - `verdict`: `"PASS"` or `"FAIL"` and `verdict_reasons`
 
-#### Verdict rules (FR-037, FR-038, FR-039, FR-042, FR-044)
+#### Verdict rules (FR-037, FR-038, FR-039, FR-042, FR-044, FR-045)
 
 ```text
+per case:  infra_error → infra_error
+           input_error → input_error            (counts as failure)
+           fallback    → fail, layer "fallback" (layers 1–3 skipped)
+           else        → schema → invariants → semantic ≥ 0.9 → pass | fail
+
 denominator = total − infra_error − not_run
 pass_rate   = passed / denominator
 PASS iff  not aborted

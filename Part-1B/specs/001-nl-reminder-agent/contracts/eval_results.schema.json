@@ -48,7 +48,7 @@
           "category": {"type": "string"},
           "requirements": {"type": "array", "items": {"type": "string"}},
           "status": {"enum": ["pass", "fail", "input_error", "infra_error", "not_run"]},
-          "failed_layer": {"enum": ["schema", "invariant", "semantic", null]},
+          "failed_layer": {"enum": ["fallback", "schema", "invariant", "semantic", null]},
           "violations": {
             "type": "array",
             "items": {"type": "object", "required": ["id", "message"],

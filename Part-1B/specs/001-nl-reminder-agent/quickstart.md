@@ -18,7 +18,7 @@ git check-ignore .env                    # must print ".env" (Constitution IX)
 
 | Step | Command | Expected |
 |------|---------|----------|
-| Unit tests (stubbed client) | `python -m pytest` | All pass. The suite covers AC-01 to AC-59 with scripted model replies. Network access is never needed. |
+| Unit tests (stubbed client) | `python -m pytest` | All pass. The suite covers AC-01 to AC-60 with scripted model replies. Network access is never needed. |
 | Quality gates | `python .harness/run_harness.py` | ruff PASS, bandit PASS, pytest PASS, clock-ban PASS, secret-scan PASS. Exit 0. Evidence is in `evidence/harness-results/<stamp>/`. |
 | Dataset check | `python .harness/evaluate.py check-dataset` | Exit 0. Reports at least 18 cases and every category minimum met (FR-032, FR-034). |
 | Input error | `reminder-agent --text "hi" --now 2026-11-10T10:00:00+05:30 --timezone Mars/Olympus; echo $?` | stderr `{"status":"input_error","category":"invalid_timezone",...}`, exit `3`, and no model call (AC-16). |

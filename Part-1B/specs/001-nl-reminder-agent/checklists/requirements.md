@@ -33,7 +33,8 @@
 
 - Validation iteration 1: all items pass.
 - The user's request itself fixes the JSON output contract, ISO-8601/IANA formats, CLI + library delivery and `evals/dataset.json`. These are the product contract, not implementation choices. The language, SDK, model and prompt are left to the plan, as the constitution requires.
-- Traceability: all 44 FRs map to at least one of AC-01 to AC-59, and every AC traces back to at least one FR.
+- Traceability: all 45 FRs map to at least one of AC-01 to AC-60, and every AC traces back to at least one FR.
+- Spec v1.2 (2026-11-07, before any evaluation run; re-validated, 16/16 still passing): fallback decisions always fail (FR-045, AC-60, FR-037 updated). Temperature is left at the model default (Assumptions, FR-040). This resolves the deferred fallback question.
 - Clarify session 2026-11-07 (re-validated, 16/16 still passing): semantic pass mark raised to 0.9 (FR-037, AC-58); `input_error` scoring defined (FR-044, AC-59). The question of whether a fallback-clarify decision can pass a case was left unanswered and is deferred to the plan.
 - Conventions chosen without asking (review during `/speckit-clarify` if you disagree):
   - The time-of-day defaults are morning 09:00, noon 12:00, afternoon 15:00, evening 18:00 and tonight 20:00.
