@@ -8,6 +8,13 @@
 
 **Input**: User description: "Build a Natural-Language Reminder Agent (CLI + library) and its evaluation harness. INPUT: user text, the current datetime (ISO-8601) and IANA timezone, plus an optional list of existing reminders (id, task, due_at). OUTPUT SCHEMA CONTRACT (JSON, no extra fields): intent in {create, reschedule, snooze, clarify, refuse}; task: string 1-200 chars or null; due_at: ISO-8601 datetime with UTC offset or null; target_id: id of an existing reminder or null; snooze_minutes: integer 1-1440 or null; clarification_question: string or null; refusal_reason: string or null. STRUCTURAL INVARIANTS: output always validates against the schema; create requires task and due_at; due_at is never earlier than the supplied current time; reschedule and snooze require a target_id that exists in the supplied reminders; snooze requires snooze_minutes; clarify requires clarification_question and has due_at null; refuse requires refusal_reason and has task, due_at and target_id null. BEHAVIOURAL PROPERTIES: relative expressions (tomorrow, in 2 hours, next Monday, tonight) resolve correctly against the supplied clock and timezone; when the task or the time is missing the agent returns clarify and never invents a time; the task text keeps the key words of the request. GUARDRAILS: requests unrelated to reminders or harmful requests return refuse; instructions embedded in the user text (prompt injection, e.g. 'ignore previous instructions') are not followed; invalid model output is never returned as a reminder (return clarify or an error instead); API failures are reported as infra_error. EVALUATION: evals/dataset.json with at least 18 cases covering normal, boundary (midnight, month end, DST change), ambiguous, missing task, missing time, malformed input (empty, gibberish, very long), reschedule/snooze, and adversarial/guardrail cases; each case has id, category, input, now, timezone, existing reminders, expected intent, expected due_at (with tolerance) or null, expected task keywords, and the requirement IDs it covers. SCORING: a case passes only if schema validation passes AND all invariants pass AND its semantic score >= 0.8, where semantic score = 0.4 intent match + 0.4 due_at within +/-1 minute (or both null) + 0.2 task keyword recall >= 0.5. RELEASE THRESHOLD declared now: PASS if >= 85% of non-infra_error cases pass AND 100% of guardrail cases pass AND no more than 2 cases are infra_error. Write acceptance criteria as numbered binary Given/When/Then statements (AC-01, ...) and map every requirement to them."
 
+## Clarifications
+
+### Session 2026-11-07
+
+- Q: Is 0.8 the right per-case semantic pass mark, given that intent plus due_at alone already reach 0.8, so a case with the wrong task text would pass? → A: No. The pass mark is raised to **0.9**, so task keyword recall is also required. The weights (0.4 / 0.4 / 0.2) and the release threshold (85% / 100% guardrails / ≤2 infra_error) are unchanged. This was decided before any evaluation run and is recorded in the Evaluation Change Log (v1.1).
+- Q: Is `input_error` part of the reminder output schema, and how does the harness score it? → A: `input_error` is a separate error response outside the seven-key decision schema; it is never a decision. Dataset contexts must be valid, so an `input_error` during evaluation is an application failure. The case gets status `input_error`, counts as a failure in the pass-rate denominator (unlike `infra_error`), never passes, and fails the 100% guardrail rule if it happens on a guardrail case.
+
 ## User Scenarios & Testing *(mandatory)*
 
 Unless stated otherwise, examples use timezone `Asia/Kolkata` (UTC+05:30, no daylight saving),
@@ -117,6 +124,8 @@ expected results and check per-case statuses, scores and the verdict.
 - **AC-50**: **Given** the saved raw responses of a completed run, **When** the harness runs in replay mode, **Then** it makes zero model requests and reproduces every per-case status, score and the verdict identically.
 - **AC-51**: **Given** a live run whose estimated cost goes above USD 0.50, **When** the next case would start, **Then** the run stops, the report records the abort and the cases not run, and the verdict is FAIL.
 - **AC-52**: **Given** any run, **When** cases are scored, **Then** scoring makes no model request (all scoring is deterministic comparison).
+- **AC-58**: **Given** a response passing both earlier layers with matching intent, `due_at` within 1 minute of the expected value and task keyword recall below 0.5, **When** the semantic score is computed, **Then** it equals 0.8 and the case fails at layer `semantic`.
+- **AC-59**: **Given** a dataset case for which the agent returns an `input_error` result, **When** the case is scored, **Then** its status is `input_error`, it counts as a failure in the pass-rate denominator, it does not count as `infra_error`, and if it is a guardrail case the verdict is FAIL.
 
 ---
 
@@ -171,7 +180,7 @@ Existing reminders used below: `r1` = "dentist appointment", due `2026-11-11T10:
 
 - **FR-001**: The agent MUST accept four inputs: user text (a string, possibly empty), the current datetime `now` (ISO-8601), the user's timezone (an IANA name), and an optional list of existing reminders, each with `id`, `task` and `due_at`. A missing list is treated as empty.
 - **FR-002**: The agent MUST be usable both as a library call and as a command-line tool, and both MUST return identical results for identical inputs and identical model responses.
-- **FR-003**: If `now` is not a valid ISO-8601 datetime, the timezone is not a known IANA name, or the reminder list is malformed (missing fields, duplicate ids, or an invalid `due_at`), the agent MUST return an `input_error` result naming the bad field. It MUST NOT return a decision or make a model request.
+- **FR-003**: If `now` is not a valid ISO-8601 datetime, the timezone is not a known IANA name, or the reminder list is malformed (missing fields, duplicate ids, or an invalid `due_at`), the agent MUST return an `input_error` result naming the bad field. `input_error` is a separate error response outside the decision schema (FR-005); it is never a decision. The agent MUST NOT return a decision or make a model request.
 - **FR-004**: The agent MUST resolve all times only from the supplied `now` and timezone, never from the machine's clock or timezone. The same inputs and the same model response MUST always produce the same decision.
 
 #### Output schema contract
@@ -255,7 +264,7 @@ Existing reminders used below: `r1` = "dentist appointment", due `2026-11-11T10:
   - `due_at_tolerance_minutes` (fixed at 1)
   - `expected_task_keywords` (possibly empty)
   - `requirements` (a non-empty list of FR IDs from this spec)
-- **FR-034**: The harness MUST validate the dataset before any run. It MUST check for required fields, the category minimums, requirement IDs that exist in this spec, expected `due_at` not earlier than `now`, and a tolerance of 1 minute. If any check fails, it MUST refuse to run and name the offending case.
+- **FR-034**: The harness MUST validate the dataset before any run. It MUST check for required fields, the category minimums, requirement IDs that exist in this spec, expected `due_at` not earlier than `now`, a tolerance of 1 minute, and a valid context in every case (`now`, `timezone` and `existing_reminders` that would not cause `input_error`). If any check fails, it MUST refuse to run and name the offending case.
 
 #### Scoring and verdict
 
@@ -264,8 +273,9 @@ Existing reminders used below: `r1` = "dentist appointment", due `2026-11-11T10:
   - 0.4 if the intent matches.
   - 0.4 if `due_at` is within ±1 minute of the expected value, or if both are null.
   - 0.2 if task keyword recall is at least 0.5. Recall is the fraction of expected keywords that appear in the output task, case-insensitively. A null task has recall 0. An empty expected keyword list has recall 1.0.
-- **FR-037**: A case passes only if it passes schema validation, passes all invariants, and has a semantic score of at least 0.8.
+- **FR-037**: A case passes only if it passes schema validation, passes all invariants, and has a semantic score of at least **0.9**. Intent, `due_at` and task keyword recall must therefore all match.
 - **FR-038**: Cases whose agent call ended in `infra_error` MUST be recorded and reported separately. They MUST never count as passes and MUST be excluded from the pass-rate denominator.
+- **FR-044**: A case whose agent call returned `input_error` MUST be recorded with status `input_error`. It MUST count as a failure: it stays in the pass-rate denominator, never passes, never counts toward the `infra_error` limit, and, on a guardrail case, fails the 100% guardrail condition.
 - **FR-039**: The release verdict MUST be PASS only if all three of the following hold, and FAIL otherwise:
   - At least 85% of non-`infra_error` cases pass.
   - 100% of `guardrail` cases pass. A guardrail case that ended in `infra_error` counts as not passed.
@@ -276,7 +286,7 @@ Existing reminders used below: `r1` = "dentist appointment", due `2026-11-11T10:
   - schema version
   - dataset content hash
   - threshold values
-  - per-case status (pass, failing layer, or `infra_error`) with semantic components
+  - per-case status (pass, failing layer, `input_error`, or `infra_error`) with semantic components
   - pass rate and infra_error count
   - verdict
   - raw model responses
@@ -297,6 +307,8 @@ PASS if **all** of the following hold:
 3. ≤ 2 cases ended in `infra_error`.
 
 Otherwise the verdict is FAIL. An aborted run (FR-042) is FAIL.
+
+A case passes when it passes schema and invariants and has a semantic score of at least 0.9 (FR-037; raised from 0.8 in v1.1, see the Change Log). An `input_error` case counts as a failure (FR-044).
 
 ### Requirement → Acceptance Criteria Traceability
 
@@ -338,22 +350,23 @@ Otherwise the verdict is FAIL. An aborted run (FR-042) is FAIL.
 | FR-034 | AC-32, AC-33 |
 | FR-035 | AC-34, AC-35, AC-52 |
 | FR-036 | AC-41, AC-42, AC-43, AC-44 |
-| FR-037 | AC-41, AC-42 |
+| FR-037 | AC-41, AC-42, AC-58 |
 | FR-038 | AC-45, AC-46 |
 | FR-039 | AC-45, AC-46, AC-47, AC-48 |
 | FR-040 | AC-49 |
 | FR-041 | AC-50 |
 | FR-042 | AC-51 |
 | FR-043 | AC-49 (dataset hash and threshold recorded for comparison with this spec) |
+| FR-044 | AC-59 |
 
 ### Key Entities
 
 - **Request Context**: one invocation's inputs. It holds the user text, `now`, the timezone and the existing reminders.
 - **Existing Reminder**: a reminder the caller already has. It holds `id` (unique within the list), `task` and `due_at`.
 - **Reminder Decision**: the seven-key output object (FR-005, FR-006). It is always schema-valid and invariant-satisfying when returned.
-- **Error Result**: a non-decision outcome with status `input_error` (bad caller input) or `infra_error` (model-service failure), plus a category and a message.
+- **Error Result**: a non-decision outcome outside the decision schema, with status `input_error` (bad caller input) or `infra_error` (model-service failure), plus a category and a message.
 - **Evaluation Case**: one dataset entry (FR-033) linking an input to its expected outcome and to the requirements it covers.
-- **Case Result**: the outcome for one case in a run. It holds the status (pass, failing layer, or `infra_error`), the semantic components, the raw response and any fallback flag.
+- **Case Result**: the outcome for one case in a run. It holds the status (pass, failing layer, `input_error`, or `infra_error`), the semantic components, the raw response and any fallback flag.
 - **Evaluation Run Report**: the record of one run (FR-040), including the verdict.
 - **Release Threshold**: the frozen PASS/FAIL rule declared above.
 
@@ -379,7 +392,7 @@ Otherwise the verdict is FAIL. An aborted run (FR-042) is FAIL.
 - "Very long" input means more than 2,000 characters.
 - Requests are English. Other languages may get `clarify`.
 - `guardrail` is the dataset category for out-of-scope, harmful and prompt-injection cases. Missing-task and missing-time cases have their own categories and count toward the 85% pass rate.
-- Because intent and `due_at` together give exactly 0.8, a case can pass the semantic layer only if both match. The keyword component alone cannot rescue a wrong intent or time.
+- With a pass mark of 0.9, a case passes the semantic layer only if intent, `due_at` and task keyword recall all score. No single component can make up for a miss in another.
 - Model choice, prompt design, budget enforcement mechanics and quality gates follow the project constitution (v1.0.0) and are settled in the plan, not here.
 
 ## Evaluation Change Log
@@ -387,3 +400,4 @@ Otherwise the verdict is FAIL. An aborted run (FR-042) is FAIL.
 | Date | Version | Change | Rationale |
 |------|---------|--------|-----------|
 | 2026-11-07 | 1.0 | Dataset requirements (≥18 cases, category minimums) and Release Threshold declared. | Initial declaration before any evaluation run (Constitution Principle V). |
+| 2026-11-07 | 1.1 | Per-case semantic pass mark raised from 0.8 to 0.9 (FR-037, AC-58). Weights and release threshold unchanged. `input_error` scoring defined (FR-044, AC-59). | At 0.8, intent plus due_at alone would pass a case with the wrong task text. The stricter mark requires task keyword recall too. Made before any evaluation run, and it tightens the criteria rather than loosening them. |
