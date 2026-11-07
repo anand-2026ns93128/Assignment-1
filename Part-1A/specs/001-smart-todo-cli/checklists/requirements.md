@@ -36,7 +36,7 @@
   purpose: the user explicitly required JSON persistence and exact outputs. They describe
   user-visible behaviour, not internal design, so they do not count as implementation details.
   No language, library or code structure is named.
-- Every FR-001 to FR-018 cites the ACs that verify it. AC IDs `AC-NN` map to test names
+- Every FR-001 to FR-019 cites the ACs that verify it. AC IDs `AC-NN` map to test names
   `test_ACNN_...` (Constitution Principle III).
 - Defaults chosen without asking (recorded under Assumptions): the command name `todo`,
   `todo.json` as the default file, `--file`, lowercase tags, exit codes 0/1/2/3, and treating a

@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-05
 
-**Status**: Draft
+**Status**: Approved (2026-11-07)
 
 **Input**: User description: "Build a command-line Smart Todo app for a single user. Features:
 (1) Add a task with a title (required, 1-100 chars), optional priority (low/medium/high, default
@@ -26,6 +26,26 @@ invalid transition, corrupt JSON file)."
 - Q: What happens when the `list --tag` filter value breaks the tag rules (e.g. `"a b"`)? → A: Rejected with the invalid-tag error, exit 1, stdout empty (new AC-55).
 - Q: How are title characters counted, and which special characters are rejected? → A: Count Unicode characters (code points) after trimming; reject any title containing a control character (tab, CR, LF, other C0/C1 controls) (new AC-56, AC-57).
 - Q: Can a task with status `done` still be edited with `todo update`? → A: Yes; `update` behaves the same for every status and never changes status (new AC-58).
+
+## Change Log
+
+- **2026-11-07 — Ctrl+C handling added to the spec (exit code 130).**
+  - *What changed*: Added exit code `130` to *Exit Codes* and the message `Error: interrupted.` to
+    *Error Messages*. FR-015 now separates a failed save (exit 3) from a user interruption (exit
+    130), and FR-017 cites the new AC. AC-21 now states the exact stderr and exit code for a failed
+    save. New AC-59 covers an interruption during a save. *Edge Cases*, SC-001 (now AC-01 to AC-59)
+    and SC-004 were updated to match.
+  - *Why*: Analysis finding I1 (`analysis-report.md`). The plan handled Ctrl+C with exit 130, but
+    the spec's exit-code and message tables, which FR-017 makes exhaustive, had no such entry, and
+    FR-015 implied exit 3 for any interrupted save. AC-21 also did not state its message or exit
+    code, so it was not fully binary.
+  - *Affected*: Tests `test_AC21_*` and the new `test_AC59_*` (tasks.md, User Story 2), plan
+    research R3/R6, contracts/cli.md and contracts/data-file.md.
+- **2026-11-07 — Status set to Approved.**
+  - *What changed*: `Status: Draft` → `Approved (2026-11-07)`, after the clarification session and
+    the analysis fixes.
+  - *Why*: Constitution I requires an approved spec before any code is written (analysis finding
+    C3).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -149,8 +169,14 @@ add to observe IDs; corrupt the data file and confirm every command refuses to t
   `Error: data file 'todo.json' is corrupt or unreadable; it was not modified.`, exit code is 3,
   and the data file is unchanged.
 - **AC-21**: **Given** a store containing task 1, **When** saving the result of
-  `todo add "Second"` is interrupted before it completes, **Then** the data file still contains
-  exactly its previous contents (task 1 only) and is readable by `todo list`.
+  `todo add "Second"` fails before it completes (e.g. the file system refuses to replace the data
+  file), **Then** stderr is `Error: could not save data file 'todo.json'; previous data was kept.`,
+  exit code is 3, stdout is empty, and the data file still contains exactly its previous contents
+  (task 1 only) and is readable by `todo list`.
+- **AC-59**: **Given** a store containing task 1, **When** the user interrupts (Ctrl+C)
+  `todo add "Second"` while its result is being saved, **Then** stderr is `Error: interrupted.`,
+  exit code is 130, stdout is empty, and the data file still contains exactly its previous
+  contents (task 1 only).
 - **AC-22**: **Given** a fresh store, **When** the user runs
   `todo --file work.json add "Report"` and then `todo --file work.json list`, **Then** the second
   command prints `1 [todo] (medium) Report`, exit codes are 0, and no `todo.json` is created.
@@ -339,7 +365,7 @@ traceback ever appears.
 - A hand-edited data file with valid JSON but invalid content (e.g. priority `urgent`, duplicate
   IDs, or a next ID not greater than an existing ID) is treated as corrupt: exit 3, file
   unchanged (FR-014).
-- An interrupted save leaves the previous data intact (AC-21).
+- A failed or interrupted save leaves the previous data intact (AC-21, AC-59).
 - Changing a task to the status it already has is an invalid transition (AC-30).
 - A `done` task can still have its title, priority or tags edited; it stays `done` (AC-58).
 - IDs that are not positive integers are rejected (AC-44, AC-45).
@@ -372,6 +398,7 @@ stored order.
 | 1 | Invalid input: bad title, priority, tag, status, ID, unknown ID, invalid transition, nothing to update, conflicting options |
 | 2 | Command-line usage error: unknown command, missing required argument, unknown option |
 | 3 | Data file problem: corrupt, unreadable or could not be saved |
+| 130 | Interrupted by the user (Ctrl+C) |
 
 ### Error Messages
 
@@ -391,6 +418,7 @@ usage errors (exit code 2), which begin with a `usage: todo` line.
 | `--tag` with `--clear-tags` | `Error: --tag and --clear-tags cannot be used together.` |
 | Corrupt/unreadable data file `PATH` | `Error: data file 'PATH' is corrupt or unreadable; it was not modified.` |
 | Data file could not be saved `PATH` | `Error: could not save data file 'PATH'; previous data was kept.` |
+| Interrupted by the user (Ctrl+C) | `Error: interrupted.` (exit code 130) |
 | Any other unexpected failure | `Error: unexpected internal error.` (exit code 1) |
 
 ### Functional Requirements
@@ -437,12 +465,14 @@ usage errors (exit code 2), which begin with a `usage: todo` line.
   (FR-002–FR-004, FR-010 status values), with tags already lowercase and unique; task IDs are
   unique positive integers; and the next ID is greater than every existing task ID.
 - **FR-015**: Saving MUST be all-or-nothing: an interrupted or failed save leaves the previous data
-  file contents intact; a failed save reports the save error with exit code 3. (AC-21)
+  file contents intact. A failed save reports the save error with exit code 3. An interruption by
+  the user (Ctrl+C) at any point, including during a save, reports `Error: interrupted.` with exit
+  code 130. (AC-21, AC-59)
 - **FR-016**: Output MUST be deterministic: identical input and identical data file always yield
   identical output, exit code and resulting data file; the program uses no randomness and no
   network. (AC-23)
 - **FR-017**: Every failure MUST produce the exact message and exit code defined above, and the
-  program MUST never display a traceback. (AC-52–AC-54, all error ACs)
+  program MUST never display a traceback. (AC-52–AC-54, AC-59, all error ACs)
 - **FR-018**: Any failed command MUST leave the data file unchanged. (all error ACs)
 - **FR-019**: When a command violates more than one rule, only the first failing check is
   reported, in this order: (1) command-line usage (exit 2); (2) argument values — ID format,
@@ -464,13 +494,13 @@ usage errors (exit code 2), which begin with a `usage: todo` line.
 
 ### Measurable Outcomes
 
-- **SC-001**: 100% of acceptance criteria AC-01 to AC-58 pass as automated checks.
+- **SC-001**: 100% of acceptance criteria AC-01 to AC-59 pass as automated checks.
 - **SC-002**: A new user can add a task and see it in the list using two commands, with no
   configuration, in under 1 minute.
 - **SC-003**: Every command completes in under 1 second for a store of up to 1,000 tasks on a
   typical laptop.
 - **SC-004**: 0 instances of lost or partially written data across all interruption and
-  corrupt-file scenarios (AC-18–AC-21).
+  corrupt-file scenarios (AC-18–AC-21, AC-59).
 - **SC-005**: 100% of invalid inputs produce a one-line, human-readable error and a non-zero exit
   code; 0 tracebacks are shown to the user.
 - **SC-006**: Running the same command on the same data file twice yields byte-identical results

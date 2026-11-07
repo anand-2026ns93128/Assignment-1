@@ -6,7 +6,8 @@ adds the plan-level details it leaves open. Where they differ, the spec wins.
 ## Invocation
 
 ```text
-python -m smart_todo [--file PATH] <command> [args]      # program name shown to users: todo
+todo [--file PATH] <command> [args]                      # launchers at repo root: ./todo (POSIX), todo.cmd (Windows)
+python -m smart_todo [--file PATH] <command> [args]      # equivalent, with src/ on PYTHONPATH
 ```
 
 Global option `--file PATH` (default `todo.json`, relative to the current directory) must come
@@ -43,7 +44,7 @@ Global option `--file PATH` (default `todo.json`, relative to the current direct
 | 1 | Invalid input or rule violation; also `Error: unexpected internal error.` | spec |
 | 2 | Usage error (argparse): stderr starts with `usage: todo` | spec |
 | 3 | Data file corrupt / unreadable / could not be saved | spec |
-| 130 | Interrupted by Ctrl+C: stderr `Error: interrupted.`, data file unchanged | **plan** (R3) |
+| 130 | Interrupted by Ctrl+C: stderr `Error: interrupted.`, data file unchanged | spec (change log 2026-11-07, AC-59) |
 
 ## Error messages
 

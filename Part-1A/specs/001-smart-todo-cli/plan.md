@@ -1,10 +1,10 @@
 # Implementation Plan: Smart Todo CLI
 
 **Branch**: `001-smart-todo-cli` (work is on `main`; see spec header) | **Date**: 2026-11-07 |
-**Spec**: [spec.md](./spec.md)
+**Spec**: [spec.md](./spec.md) | **Status**: Approved (2026-11-07)
 
-**Input**: Feature specification from `specs/001-smart-todo-cli/spec.md` (AC-01–AC-58, FR-001–FR-019,
-clarification session 2026-11-07)
+**Input**: Feature specification from `specs/001-smart-todo-cli/spec.md` (AC-01–AC-59, FR-001–FR-019,
+clarification session and change log 2026-11-07)
 
 ## Summary
 
@@ -21,7 +21,9 @@ technical approach is Python 3.11 standard library only:
 - Forced UTF-8 and LF output for byte-identical results on every OS (R7).
 
 Tests are named `test_ACNN_*` and call `main(argv)` in-process. A small subprocess suite covers
-the real process boundary.
+the real process boundary. All quality gates run through one harness, `.harness/run_harness.py`,
+which saves its evidence for every run (R11). Users start the program with the `todo` /
+`todo.cmd` launchers at the repository root, with no setup (R8).
 
 ## Technical Context
 
@@ -57,18 +59,18 @@ modules and roughly 60–80 tests.
 
 | # | Principle | How this plan complies | Status |
 |---|-----------|------------------------|--------|
-| I | Spec-first | All behaviour traces to AC-/FR- IDs. `tasks.md` (next step) will reference ACs. Code is written only after tasks exist. | ✅ |
-| II | Quality gates | Gate commands are fixed in quickstart.md: `ruff check .`, `bandit -r src tests`, `pytest --cov=smart_todo --cov-fail-under=90`. The threshold also lives in `pyproject.toml`. | ✅ |
+| I | Spec-first | All behaviour traces to AC-/FR- IDs, and every task references them. The harness and the launchers are part of this plan (Project Structure, R8, R11). Spec and plan are marked Approved. Code is written only after tasks exist. | ✅ |
+| II | Quality gates | All gates run through `.harness/run_harness.py` (R11): `ruff check .`, `bandit -r src tests .harness` (any MEDIUM/HIGH fails), `pytest` over `tests/` and `.harness/tests/`, and coverage ≥ 90% of `smart_todo` (also `fail_under = 90` in `pyproject.toml`). Results go to `evidence/harness-results/<timestamp>/`. Commits happen only at phase checkpoints after the harness passes (tasks.md commit rule), so every commit leaves all gates passing. | ✅ |
 | III | Test integrity | Each AC-NN gets a `test_ACNN_<desc>` function. The quickstart includes a traceability script. No `skip`/`xfail`/`noqa`/`nosec`, no coverage omissions, no rule ignores in config. | ✅ |
 | IV | Deterministic | No `random`/`uuid`/`secrets`/`tempfile` (fixed `.tmp` name, R6). No network. No clock is used at all, so nothing needs to be injectable. Sort key `(priority_rank, id)`. Canonical JSON serialisation. UTF-8 + LF output (R7). | ✅ |
 | V | Safe persistence | Single JSON file. Temp file in the same directory → flush → fsync → `os.replace`. Missing file means an empty store. Corrupt/unreadable/off-schema files get exit 3 and are never written (R5, R6). | ✅ |
-| VI | Graceful errors | One `TodoError` hierarchy. Top-level catch-all prevents tracebacks. Exit codes 0/1/2/3 (spec) + 130 (Ctrl+C) are documented in [contracts/cli.md](./contracts/cli.md). | ✅ |
+| VI | Graceful errors | One `TodoError` hierarchy. Top-level catch-all prevents tracebacks. Exit codes 0/1/2/3/130 are all defined in the spec (130 added by the spec change log, 2026-11-07) and restated in [contracts/cli.md](./contracts/cli.md). | ✅ |
 | VII | No secrets | The app needs none. `.gitignore` adds `todo.json`, `*.json.tmp`, `.env`, `.venv/`, and caches/coverage output. | ✅ |
 | VIII | Controlled changes | The clarification session is recorded in spec.md with its date. Later requirement changes go through spec → plan → tasks. | ✅ |
-| Tech | Python 3.11, stdlib only, CLI, single JSON file | Met. No build backend declared, so no setuptools dependency (R8). | ✅ (see note) |
+| Tech | Python 3.11, stdlib only, CLI, single JSON file | Met. No build backend is declared; the `todo`/`todo.cmd` launchers need no dependency (R8). The final harness run uses `--final`, which fails on any interpreter other than 3.11 (R10). | ✅ (see note) |
 
-**Note (not a violation)**: The local interpreter is 3.13.2. Gates should be run on 3.11 before
-results are reported as final (R10).
+**Note (not a violation)**: The local interpreter is 3.13.2. Harness runs during development only
+warn about this; the final run (`run_harness.py --final`) must use Python 3.11 (R10).
 
 ## Project Structure
 
@@ -94,6 +96,16 @@ specs/001-smart-todo-cli/
 ```text
 pyproject.toml            # [project] metadata (no deps), ruff / pytest / coverage config; no [build-system]
 .gitignore
+.gitattributes            # LF for `todo`, CRLF for `*.cmd`
+todo                      # POSIX launcher: PYTHONPATH=src python3 -m smart_todo "$@"   (R8)
+todo.cmd                  # Windows launcher                                           (R8)
+.harness/
+├── run_harness.py        # ruff, bandit, pytest + coverage; writes evidence; exit 0 iff all PASS (R11)
+├── README.md
+└── tests/
+    └── test_run_harness.py   # self-tests of the harness helpers (collected by the pytest gate)
+evidence/
+└── harness-results/<UTC timestamp>/   # *.stdout.txt, *.stderr.txt, bandit.json, junit.xml, coverage.json, summary.json
 src/
 └── smart_todo/
     ├── __init__.py
@@ -102,17 +114,18 @@ src/
     ├── errors.py         # TodoError, InputError (1), UsageError (2), DataFileError (3)
     ├── models.py         # Priority/Status constants, Task dataclass, validators (ID, title, tag, priority, status), transitions
     ├── store.py          # Store dataclass, load (strict schema), save (atomic), serialise
-    └── service.py        # add / list (filter + sort) / update / delete / set_status on a Store; pure, no I/O
+    └── service.py        # find_task / add / list (filter + sort) / update / delete / set_status on a Store; pure, no I/O
 tests/
 ├── conftest.py           # `run(*argv)` fixture → (code, stdout, stderr) in tmp cwd; `seed()` helper; `data_bytes()`
 ├── acceptance/
 │   ├── test_us1_add_list.py        # AC-01–AC-13, AC-56, AC-57
-│   ├── test_us2_persistence.py     # AC-14–AC-23
+│   ├── test_us2_persistence.py     # AC-14–AC-23, AC-59
 │   ├── test_us3_status.py          # AC-24–AC-32
 │   ├── test_us4_update_delete.py   # AC-33–AC-45, AC-58
 │   ├── test_us5_filter.py          # AC-46–AC-51, AC-55
 │   ├── test_us6_usage.py           # AC-52–AC-54
-│   └── test_subprocess.py          # AC-14, AC-23, AC-52–AC-54 via `python -m smart_todo`
+│   ├── test_subprocess.py          # AC-14, AC-23, AC-52–AC-54 via `python -m smart_todo`
+│   └── test_launcher.py            # SC-002 via the `todo` / `todo.cmd` launcher
 └── unit/
     ├── test_models.py    # validators, transitions, tag normalisation
     ├── test_store.py     # each validity rule in contracts/data-file.md, canonical bytes, save failure cleanup
@@ -127,7 +140,8 @@ tests/
 - `models.py` holds the value rules shared by input validation and load validation, so both
   paths check exactly the same rules (FR-002–FR-004 vs contracts/data-file.md rules 8–10).
 
-Tests import from `src` via pytest `pythonpath = ["src"]`; nothing is installed.
+Tests import from `src` via pytest `pythonpath = ["src"]`; nothing is installed. Pytest's
+`testpaths = ["tests", ".harness/tests"]`, so the harness self-tests are part of the pytest gate.
 
 ### Control flow per command
 
@@ -147,7 +161,7 @@ main(argv)
 
 ## Phase 0 / Phase 1 outputs
 
-- [research.md](./research.md): R1–R10, no NEEDS CLARIFICATION left.
+- [research.md](./research.md): R1–R11, no NEEDS CLARIFICATION left.
 - [data-model.md](./data-model.md)
 - [contracts/cli.md](./contracts/cli.md), [contracts/data-file.md](./contracts/data-file.md)
 - [quickstart.md](./quickstart.md)
@@ -158,7 +172,7 @@ main(argv)
 |------|-----------|
 | Windows text streams emit CRLF or a legacy code page → byte-exact tests fail | R7 reconfigure; subprocess tests compare raw bytes |
 | `os.replace` fails on Windows if the target is open elsewhere | Report the save error (exit 3); previous file is kept (FR-015) |
-| Gates run on 3.13 instead of the 3.11 the constitution requires | Install 3.11 before final gate report (R10) |
+| Gates run on 3.13 instead of the 3.11 the constitution requires | `run_harness.py --final` fails on any interpreter other than 3.11 (R10) |
 | argparse wording differs slightly between Python versions | ACs only assert `usage: todo` as the first line, exit 2 and no `Traceback` |
 
 ## Complexity Tracking
