@@ -1,0 +1,50 @@
+E501 Line too long (101 > 100)
+  --> src\smart_todo\errors.py:47:101
+   |
+46 | def corrupt_file(path: str) -> DataFileError:
+47 |     return DataFileError(f"Error: data file '{path}' is corrupt or unreadable; it was not modified.")
+   |                                                                                                     ^
+
+UP012 [*] Unnecessary UTF-8 `encoding` argument to `encode`
+   --> tests\unit\test_core.py:98:16
+    |
+ 96 |           3, (Task(2, "Café ✓", "low", "done", ()), Task(1, "Pay rent", "high", "todo", ("home",)))
+ 97 |       )
+ 98 |       expected = (
+    |  ________________^
+ 99 | |         "{\n"
+100 | |         '  "version": 1,\n'
+101 | |         '  "next_id": 3,\n'
+102 | |         '  "tasks": [\n'
+103 | |         "    {\n"
+104 | |         '      "id": 1,\n'
+105 | |         '      "title": "Pay rent",\n'
+106 | |         '      "priority": "high",\n'
+107 | |         '      "status": "todo",\n'
+108 | |         '      "tags": [\n'
+109 | |         '        "home"\n'
+110 | |         "      ]\n"
+111 | |         "    },\n"
+112 | |         "    {\n"
+113 | |         '      "id": 2,\n'
+114 | |         '      "title": "Café ✓",\n'
+115 | |         '      "priority": "low",\n'
+116 | |         '      "status": "done",\n'
+117 | |         '      "tags": []\n'
+118 | |         "    }\n"
+119 | |         "  ]\n"
+120 | |         "}\n"
+121 | |     ).encode("utf-8")
+    | |_____________________^
+122 |       assert store.serialise(data) == expected
+    |
+help: Remove unnecessary `encoding` argument
+    |
+120 |         "}\n"
+    -     ).encode("utf-8")
+121 +     ).encode()
+122 |     assert store.serialise(data) == expected
+    |
+
+Found 2 errors.
+[*] 1 fixable with `--fix`.

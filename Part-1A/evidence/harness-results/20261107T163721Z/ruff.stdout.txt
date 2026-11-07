@@ -1,0 +1,8 @@
+E501 Line too long (101 > 100)
+  --> src\smart_todo\models.py:81:101
+   |
+80 | # Task T040: the only allowed status changes (FR-010). Same-status moves are rejected.
+81 | ALLOWED_TRANSITIONS = frozenset({("todo", "in_progress"), ("in_progress", "done"), ("todo", "done")})
+   |                                                                                                     ^
+
+Found 1 error.

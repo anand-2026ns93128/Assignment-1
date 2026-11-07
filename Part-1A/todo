@@ -1,0 +1,4 @@
+#!/bin/sh
+# Smart Todo CLI launcher (POSIX). Puts src/ on PYTHONPATH; needs no setup (SC-002).
+DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+PYTHONPATH="$DIR/src${PYTHONPATH:+:$PYTHONPATH}" exec python3 -m smart_todo "$@"

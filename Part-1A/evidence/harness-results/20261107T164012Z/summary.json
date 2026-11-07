@@ -1,0 +1,67 @@
+{
+  "final": false,
+  "gates": {
+    "bandit": {
+      "command": [
+        "C:\\Users\\PMB\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+        "-m",
+        "bandit",
+        "-r",
+        "src",
+        "tests",
+        ".harness",
+        "-f",
+        "json"
+      ],
+      "exit_code": 1,
+      "low_count": 200,
+      "medium_high_count": 0,
+      "status": "PASS"
+    },
+    "coverage": {
+      "percent": 98.78,
+      "status": "PASS",
+      "threshold": 90.0
+    },
+    "pytest": {
+      "command": [
+        "C:\\Users\\PMB\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+        "-m",
+        "pytest",
+        "--cov=smart_todo",
+        "--cov-report=term-missing",
+        "--cov-report=json:C:\\Users\\PMB\\Assignment-1\\Part-1A\\evidence\\harness-results\\20261107T164012Z\\coverage.json",
+        "--junitxml=C:\\Users\\PMB\\Assignment-1\\Part-1A\\evidence\\harness-results\\20261107T164012Z\\junit.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "skipped": 0,
+      "status": "PASS",
+      "tests": 190
+    },
+    "ruff": {
+      "command": [
+        "C:\\Users\\PMB\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+        "-m",
+        "ruff",
+        "check",
+        "."
+      ],
+      "exit_code": 0,
+      "status": "PASS"
+    }
+  },
+  "overall": "PASS",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": {
+    "required": "3.11",
+    "status": "WARN",
+    "version": "3.13.2"
+  },
+  "python_version": "3.13.2",
+  "timestamp": "20261107T164012Z",
+  "warnings": [
+    "python_version is not 3.11"
+  ]
+}

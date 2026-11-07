@@ -1,0 +1,628 @@
+{
+  "errors": [],
+  "generated_at": "2026-11-07T16:19:26Z",
+  "metrics": {
+    ".harness\\run_harness.py": {
+      "CONFIDENCE.HIGH": 2,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 2,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 234,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    ".harness\\tests\\test_run_harness.py": {
+      "CONFIDENCE.HIGH": 26,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 26,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 68,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "_totals": {
+      "CONFIDENCE.HIGH": 28,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 28,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 304,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "src\\smart_todo\\__init__.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 2,
+      "nosec": 0,
+      "skipped_tests": 0
+    }
+  },
+  "results": [
+    {
+      "code": "26 import re\n27 import subprocess\n28 import sys\n",
+      "col_offset": 0,
+      "end_col_offset": 17,
+      "filename": ".harness\\run_harness.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Consider possible security implications associated with the subprocess module.",
+      "line_number": 27,
+      "line_range": [
+        27
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
+      "test_id": "B404",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "148     try:\n149         completed = subprocess.run(  # argument list, never a shell\n150             command,\n151             cwd=ROOT,\n152             capture_output=True,\n153             text=True,\n154             encoding=\"utf-8\",\n155             errors=\"replace\",\n156             check=False,\n157         )\n158     except OSError as exc:\n",
+      "col_offset": 20,
+      "end_col_offset": 9,
+      "filename": ".harness\\run_harness.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "subprocess call - check for execution of untrusted input.",
+      "line_number": 149,
+      "line_range": [
+        149,
+        150,
+        151,
+        152,
+        153,
+        154,
+        155,
+        156,
+        157
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
+      "test_id": "B603",
+      "test_name": "subprocess_without_shell_equals_true"
+    },
+    {
+      "code": "29     result = harness.bandit_status(report)\n30     assert result[\"status\"] == \"PASS\"\n31     assert result[\"low_count\"] == 1\n",
+      "col_offset": 4,
+      "end_col_offset": 37,
+      "filename": ".harness\\tests\\test_run_harness.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.",
+      "line_number": 30,
+      "line_range": [
+        30
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b101_assert_used.html",
+      "test_id": "B101",
+      "test_name": "assert_used"
+    },
+    {
+      "code": "30     assert result[\"status\"] == \"PASS\"\n31     assert result[\"low_count\"] == 1\n32     assert result[\"medium_high_count\"] == 0\n",
+      "col_offset": 4,
+      "end_col_offset": 35,
+      "filename": ".harness\\tests\\test_run_harness.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.",
+      "line_number": 31,
+      "line_range": [
+        31
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b101_assert_used.html",
+      "test_id": "B101",
+      "test_name": "assert_used"
+    },
+    {
+      "code": "31     assert result[\"low_count\"] == 1\n32     assert result[\"medium_high_count\"] == 0\n33 \n",
+      "col_offset": 4,
+      "end_col_offset": 43,
+      "filename": ".harness\\tests\\test_run_harness.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.",
+      "line_number": 32,
+      "line_range": [
+        32
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b101_assert_used.html",
+      "test_id": "B101",
+      "test_name": "assert_used"
+    },
+    {
+      "code": "37         report = {\"errors\": [], \"results\": [{\"issue_severity\": severity}]}\n38         assert harness.bandit_status(report)[\"status\"] == \"FAIL\"\n39 \n",
+      "col_offset": 8,
+      "end_col_offset": 64,
+      "filename": ".harness\\tests\\test_run_harness.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.",
+      "line_number": 38,
+      "line_range": [
+        38
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b101_assert_used.html",
+      "test_id": "B101",
+      "test_name": "assert_used"
+    },
+    {
+      "code": "42     report = {\"errors\": [{\"filename\": \"x.py\", \"reason\": \"syntax error\"}], \"results\": []}\n43     assert harness.bandit_status(report)[\"status\"] == \"FAIL\"\n44 \n",
+      "col_offset": 4,
+      "end_col_offset": 60,
+      "filename": ".harness\\tests\\test_run_harness.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.",
+      "line_number": 43,
+      "line_range": [
+        43
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b101_assert_used.html",
+      "test_id": "B101",
+      "test_name": "assert_used"
+    },
+    {
+      "code": "46 def test_bandit_gate_fails_without_report():\n47     assert harness.bandit_status(None)[\"status\"] == \"FAIL\"\n48 \n",
+      "col_offset": 4,
+      "end_col_offset": 58,
+      "filename": ".harness\\tests\\test_run_harness.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.",
+      "line_number": 47,
+      "line_range": [
+        47
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b101_assert_used.html",
+      "test_id": "B101",
+      "test_name": "assert_used"
+    },
+    {
+      "code": "50 def test_pytest_gate_from_junit(tmp_path):\n51     assert harness.pytest_status(_junit(tmp_path, tests=3))[\"status\"] == \"PASS\"\n52     assert harness.pytest_status(_junit(tmp_path, tests=3, failures=1))[\"status\"] == \"FAIL\"\n",
+      "col_offset": 4,
+      "end_col_offset": 79,
+      "filename": ".harness\\tests\\test_run_harness.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.",
+      "line_number": 51,
+      "line_range": [
+        51
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b101_assert_used.html",
+      "test_id": "B101",
+      "test_name": "assert_used"
+    },
+    {
+      "code": "51     assert harness.pytest_status(_junit(tmp_path, tests=3))[\"status\"] == \"PASS\"\n52     assert harness.pytest_status(_junit(tmp_path, tests=3, failures=1))[\"status\"] == \"FAIL\"\n53     assert harness.pytest_status(_junit(tmp_path, tests=3, errors=1))[\"status\"] == \"FAIL\"\n",
+      "col_offset": 4,
+      "end_col_offset": 91,
+      "filename": ".harness\\tests\\test_run_harness.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.",
+      "line_number": 52,
+      "line_range": [
+        52
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b101_assert_used.html",
+      "test_id": "B101",
+      "test_name": "assert_used"
+    },
+    {
+      "code": "52     assert harness.pytest_status(_junit(tmp_path, tests=3, failures=1))[\"status\"] == \"FAIL\"\n53     assert harness.pytest_status(_junit(tmp_path, tests=3, errors=1))[\"status\"] == \"FAIL\"\n54     assert harness.pytest_status(_junit(tmp_path, tests=3, skipped=1))[\"status\"] == \"FAIL\"\n",
+      "col_offset": 4,
+      "end_col_offset": 89,
+      "filename": ".harness\\tests\\test_run_harness.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.",
+      "line_number": 53,
+      "line_range": [
+        53
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b101_assert_used.html",
+      "test_id": "B101",
+      "test_name": "assert_used"
+    },
+    {
+      "code": "53     assert harness.pytest_status(_junit(tmp_path, tests=3, errors=1))[\"status\"] == \"FAIL\"\n54     assert harness.pytest_status(_junit(tmp_path, tests=3, skipped=1))[\"status\"] == \"FAIL\"\n55     assert harness.pytest_status(_junit(tmp_path, tests=0))[\"status\"] == \"FAIL\"\n",
+      "col_offset": 4,
+      "end_col_offset": 90,
+      "filename": ".harness\\tests\\test_run_harness.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.",
+      "line_number": 54,
+      "line_range": [
+        54
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b101_assert_used.html",
+      "test_id": "B101",
+      "test_name": "assert_used"
+    },
+    {
+      "code": "54     assert harness.pytest_status(_junit(tmp_path, tests=3, skipped=1))[\"status\"] == \"FAIL\"\n55     assert harness.pytest_status(_junit(tmp_path, tests=0))[\"status\"] == \"FAIL\"\n56     assert harness.pytest_status(tmp_path / \"missing.xml\")[\"status\"] == \"FAIL\"\n",
+      "col_offset": 4,
+      "end_col_offset": 79,
+      "filename": ".harness\\tests\\test_run_harness.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.",
+      "line_number": 55,
+      "line_range": [
+        55
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b101_assert_used.html",
+      "test_id": "B101",
+      "test_name": "assert_used"
+    },
+    {
+      "code": "55     assert harness.pytest_status(_junit(tmp_path, tests=0))[\"status\"] == \"FAIL\"\n56     assert harness.pytest_status(tmp_path / \"missing.xml\")[\"status\"] == \"FAIL\"\n57 \n",
+      "col_offset": 4,
+      "end_col_offset": 78,
+      "filename": ".harness\\tests\\test_run_harness.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.",
+      "line_number": 56,
+      "line_range": [
+        56
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b101_assert_used.html",
+      "test_id": "B101",
+      "test_name": "assert_used"
+    },
+    {
+      "code": "61     path.write_text(json.dumps({\"totals\": {\"percent_covered\": 90.0}}), encoding=\"utf-8\")\n62     assert harness.coverage_status(path, 90.0)[\"status\"] == \"PASS\"\n63     path.write_text(json.dumps({\"totals\": {\"percent_covered\": 89.99}}), encoding=\"utf-8\")\n",
+      "col_offset": 4,
+      "end_col_offset": 66,
+      "filename": ".harness\\tests\\test_run_harness.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.",
+      "line_number": 62,
+      "line_range": [
+        62
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b101_assert_used.html",
+      "test_id": "B101",
+      "test_name": "assert_used"
+    },
+    {
+      "code": "63     path.write_text(json.dumps({\"totals\": {\"percent_covered\": 89.99}}), encoding=\"utf-8\")\n64     assert harness.coverage_status(path, 90.0)[\"status\"] == \"FAIL\"\n65     assert harness.coverage_status(tmp_path / \"missing.json\", 90.0)[\"status\"] == \"FAIL\"\n",
+      "col_offset": 4,
+      "end_col_offset": 66,
+      "filename": ".harness\\tests\\test_run_harness.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.",
+      "line_number": 64,
+      "line_range": [
+        64
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b101_assert_used.html",
+      "test_id": "B101",
+      "test_name": "assert_used"
+    },
+    {
+      "code": "64     assert harness.coverage_status(path, 90.0)[\"status\"] == \"FAIL\"\n65     assert harness.coverage_status(tmp_path / \"missing.json\", 90.0)[\"status\"] == \"FAIL\"\n66 \n",
+      "col_offset": 4,
+      "end_col_offset": 87,
+      "filename": ".harness\\tests\\test_run_harness.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.",
+      "line_number": 65,
+      "line_range": [
+        65
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b101_assert_used.html",
+      "test_id": "B101",
+      "test_name": "assert_used"
+    },
+    {
+      "code": "68 def test_coverage_threshold_constant_is_90():\n69     assert harness.COVERAGE_THRESHOLD == 90.0\n70 \n",
+      "col_offset": 4,
+      "end_col_offset": 45,
+      "filename": ".harness\\tests\\test_run_harness.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.",
+      "line_number": 69,
+      "line_range": [
+        69
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b101_assert_used.html",
+      "test_id": "B101",
+      "test_name": "assert_used"
+    },
+    {
+      "code": "74     one_fail = {\"ruff\": {\"status\": \"PASS\"}, \"bandit\": {\"status\": \"FAIL\"}}\n75     assert harness.overall(all_pass) == \"PASS\"\n76     assert harness.exit_code_for(\"PASS\") == 0\n",
+      "col_offset": 4,
+      "end_col_offset": 46,
+      "filename": ".harness\\tests\\test_run_harness.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.",
+      "line_number": 75,
+      "line_range": [
+        75
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b101_assert_used.html",
+      "test_id": "B101",
+      "test_name": "assert_used"
+    },
+    {
+      "code": "75     assert harness.overall(all_pass) == \"PASS\"\n76     assert harness.exit_code_for(\"PASS\") == 0\n77     assert harness.overall(one_fail) == \"FAIL\"\n",
+      "col_offset": 4,
+      "end_col_offset": 45,
+      "filename": ".harness\\tests\\test_run_harness.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.",
+      "line_number": 76,
+      "line_range": [
+        76
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b101_assert_used.html",
+      "test_id": "B101",
+      "test_name": "assert_used"
+    },
+    {
+      "code": "76     assert harness.exit_code_for(\"PASS\") == 0\n77     assert harness.overall(one_fail) == \"FAIL\"\n78     assert harness.exit_code_for(\"FAIL\") == 1\n",
+      "col_offset": 4,
+      "end_col_offset": 46,
+      "filename": ".harness\\tests\\test_run_harness.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.",
+      "line_number": 77,
+      "line_range": [
+        77
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b101_assert_used.html",
+      "test_id": "B101",
+      "test_name": "assert_used"
+    },
+    {
+      "code": "77     assert harness.overall(one_fail) == \"FAIL\"\n78     assert harness.exit_code_for(\"FAIL\") == 1\n79 \n",
+      "col_offset": 4,
+      "end_col_offset": 45,
+      "filename": ".harness\\tests\\test_run_harness.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.",
+      "line_number": 78,
+      "line_range": [
+        78
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b101_assert_used.html",
+      "test_id": "B101",
+      "test_name": "assert_used"
+    },
+    {
+      "code": "82     first = harness.unique_run_dir(tmp_path, \"20261107T120000Z\")\n83     assert first == tmp_path / \"20261107T120000Z\"\n84     first.mkdir()\n",
+      "col_offset": 4,
+      "end_col_offset": 49,
+      "filename": ".harness\\tests\\test_run_harness.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.",
+      "line_number": 83,
+      "line_range": [
+        83
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b101_assert_used.html",
+      "test_id": "B101",
+      "test_name": "assert_used"
+    },
+    {
+      "code": "84     first.mkdir()\n85     assert harness.unique_run_dir(tmp_path, \"20261107T120000Z\") == tmp_path / \"20261107T120000Z-1\"\n86 \n",
+      "col_offset": 4,
+      "end_col_offset": 98,
+      "filename": ".harness\\tests\\test_run_harness.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.",
+      "line_number": 85,
+      "line_range": [
+        85
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b101_assert_used.html",
+      "test_id": "B101",
+      "test_name": "assert_used"
+    },
+    {
+      "code": "88 def test_python_check():\n89     assert harness.python_status((3, 11, 9), final=True)[\"status\"] == \"PASS\"\n90     assert harness.python_status((3, 13, 2), final=True)[\"status\"] == \"FAIL\"\n",
+      "col_offset": 4,
+      "end_col_offset": 76,
+      "filename": ".harness\\tests\\test_run_harness.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.",
+      "line_number": 89,
+      "line_range": [
+        89
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b101_assert_used.html",
+      "test_id": "B101",
+      "test_name": "assert_used"
+    },
+    {
+      "code": "89     assert harness.python_status((3, 11, 9), final=True)[\"status\"] == \"PASS\"\n90     assert harness.python_status((3, 13, 2), final=True)[\"status\"] == \"FAIL\"\n91     warn = harness.python_status((3, 13, 2), final=False)\n",
+      "col_offset": 4,
+      "end_col_offset": 76,
+      "filename": ".harness\\tests\\test_run_harness.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.",
+      "line_number": 90,
+      "line_range": [
+        90
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b101_assert_used.html",
+      "test_id": "B101",
+      "test_name": "assert_used"
+    },
+    {
+      "code": "91     warn = harness.python_status((3, 13, 2), final=False)\n92     assert warn[\"status\"] == \"WARN\"\n93     assert harness.overall({\"ruff\": {\"status\": \"PASS\"}, \"python\": warn}) == \"PASS\"\n",
+      "col_offset": 4,
+      "end_col_offset": 35,
+      "filename": ".harness\\tests\\test_run_harness.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.",
+      "line_number": 92,
+      "line_range": [
+        92
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b101_assert_used.html",
+      "test_id": "B101",
+      "test_name": "assert_used"
+    },
+    {
+      "code": "92     assert warn[\"status\"] == \"WARN\"\n93     assert harness.overall({\"ruff\": {\"status\": \"PASS\"}, \"python\": warn}) == \"PASS\"\n",
+      "col_offset": 4,
+      "end_col_offset": 82,
+      "filename": ".harness\\tests\\test_run_harness.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 703,
+        "link": "https://cwe.mitre.org/data/definitions/703.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.",
+      "line_number": 93,
+      "line_range": [
+        93
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b101_assert_used.html",
+      "test_id": "B101",
+      "test_name": "assert_used"
+    }
+  ]
+}

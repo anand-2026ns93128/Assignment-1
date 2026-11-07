@@ -1,0 +1,18 @@
+# Local task data (Constitution VII)
+todo.json
+*.json.tmp
+
+# Secrets / local environment
+.env
+.venv/
+
+# Python and tool caches
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Coverage output (harness results under evidence/ are kept on purpose)
+.coverage
+coverage.xml
+htmlcov/

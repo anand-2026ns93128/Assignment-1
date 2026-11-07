@@ -1,0 +1,40 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.2, pytest-9.2.0, pluggy-1.7.0
+rootdir: C:\Users\PMB\Assignment-1\Part-1A
+configfile: pyproject.toml
+testpaths: tests, .harness/tests
+plugins: dash-3.0.4, cov-7.1.0
+collected 39 items
+
+tests\unit\test_core.py ...........                                      [ 28%]
+tests\unit\test_models.py ................                               [ 69%]
+tests\unit\test_service.py ..                                            [ 74%]
+.harness\tests\test_run_harness.py ..........                            [100%]
+
+============================== warnings summary ===============================
+..\..\AppData\Local\Programs\Python\Python313\Lib\site-packages\dash\testing\plugin.py:104
+  C:\Users\PMB\AppData\Local\Programs\Python\Python313\Lib\site-packages\dash\testing\plugin.py:104: PytestRemovedIn10Warning: The hookimpl pytest_addhooks uses old-style configuration options (marks or attributes).
+  Please use the pytest.hookimpl(tryfirst=True) decorator instead
+   to configure the hooks.
+   See https://docs.pytest.org/en/latest/deprecations.html#configuring-hook-specs-impls-using-markers
+    @pytest.mark.tryfirst
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: C:\Users\PMB\Assignment-1\Part-1A\evidence\harness-results\20261107T162113Z\junit.xml -
+=============================== tests coverage ================================
+_______________ coverage: platform win32, python 3.13.2-final-0 _______________
+
+Name                         Stmts   Miss  Cover   Missing
+----------------------------------------------------------
+src\smart_todo\__init__.py       1      0   100%
+src\smart_todo\__main__.py       3      3     0%   3-7
+src\smart_todo\cli.py           77      1    99%   101
+src\smart_todo\errors.py        41      8    80%   47, 51, 63, 71, 77, 81, 85, 89
+src\smart_todo\models.py        24      0   100%
+src\smart_todo\service.py        9      0   100%
+src\smart_todo\store.py         29      2    93%   41-42
+----------------------------------------------------------
+TOTAL                          184     14    92%
+Coverage JSON written to file C:\Users\PMB\Assignment-1\Part-1A\evidence\harness-results\20261107T162113Z\coverage.json
+Required test coverage of 90.0% reached. Total coverage: 92.39%
+======================== 39 passed, 1 warning in 1.28s ========================

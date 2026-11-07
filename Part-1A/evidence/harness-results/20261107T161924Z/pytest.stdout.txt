@@ -1,0 +1,28 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.2, pytest-9.2.0, pluggy-1.7.0
+rootdir: C:\Users\PMB\Assignment-1\Part-1A
+configfile: pyproject.toml
+testpaths: tests, .harness/tests
+plugins: dash-3.0.4, cov-7.1.0
+collected 10 items
+
+.harness\tests\test_run_harness.py ..........
+WARNING: Failed to generate report: No data to report.
+
+
+ERROR: Coverage failure: total of 0 is less than fail-under=90
+                                                                         [100%]
+
+============================== warnings summary ===============================
+..\..\AppData\Local\Programs\Python\Python313\Lib\site-packages\dash\testing\plugin.py:104
+  C:\Users\PMB\AppData\Local\Programs\Python\Python313\Lib\site-packages\dash\testing\plugin.py:104: PytestRemovedIn10Warning: The hookimpl pytest_addhooks uses old-style configuration options (marks or attributes).
+  Please use the pytest.hookimpl(tryfirst=True) decorator instead
+   to configure the hooks.
+   See https://docs.pytest.org/en/latest/deprecations.html#configuring-hook-specs-impls-using-markers
+    @pytest.mark.tryfirst
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: C:\Users\PMB\Assignment-1\Part-1A\evidence\harness-results\20261107T161924Z\junit.xml -
+=============================== tests coverage ================================
+FAIL Required test coverage of 90.0% not reached. Total coverage: 0.00%
+======================== 10 passed, 1 warning in 0.74s ========================

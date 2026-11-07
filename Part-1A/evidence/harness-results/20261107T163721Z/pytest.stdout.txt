@@ -1,0 +1,47 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.2, pytest-9.2.0, pluggy-1.7.0
+rootdir: C:\Users\PMB\Assignment-1\Part-1A
+configfile: pyproject.toml
+testpaths: tests, .harness/tests
+plugins: dash-3.0.4, cov-7.1.0
+collected 155 items
+
+tests\acceptance\test_launcher.py .                                      [  0%]
+tests\acceptance\test_subprocess.py ..                                   [  1%]
+tests\acceptance\test_us1_add_list.py ...............                    [ 11%]
+tests\acceptance\test_us2_persistence.py ...........                     [ 18%]
+tests\acceptance\test_us3_status.py .........                            [ 24%]
+tests\unit\test_core.py ...........                                      [ 31%]
+tests\unit\test_models.py .............................................. [ 61%]
+.........                                                                [ 67%]
+tests\unit\test_service.py .....                                         [ 70%]
+tests\unit\test_store.py ....................................            [ 93%]
+.harness\tests\test_run_harness.py ..........                            [100%]
+
+============================== warnings summary ===============================
+..\..\AppData\Local\Programs\Python\Python313\Lib\site-packages\dash\testing\plugin.py:104
+  C:\Users\PMB\AppData\Local\Programs\Python\Python313\Lib\site-packages\dash\testing\plugin.py:104: PytestRemovedIn10Warning: The hookimpl pytest_addhooks uses old-style configuration options (marks or attributes).
+  Please use the pytest.hookimpl(tryfirst=True) decorator instead
+   to configure the hooks.
+   See https://docs.pytest.org/en/latest/deprecations.html#configuring-hook-specs-impls-using-markers
+    @pytest.mark.tryfirst
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: C:\Users\PMB\Assignment-1\Part-1A\evidence\harness-results\20261107T163721Z\junit.xml -
+=============================== tests coverage ================================
+_______________ coverage: platform win32, python 3.13.2-final-0 _______________
+
+Name                         Stmts   Miss  Cover   Missing
+----------------------------------------------------------
+src\smart_todo\__init__.py       1      0   100%
+src\smart_todo\__main__.py       3      3     0%   3-7
+src\smart_todo\cli.py           96      1    99%   135
+src\smart_todo\errors.py        41      2    95%   87, 91
+src\smart_todo\models.py        51      0   100%
+src\smart_todo\service.py       25      0   100%
+src\smart_todo\store.py         83      0   100%
+----------------------------------------------------------
+TOTAL                          300      6    98%
+Coverage JSON written to file C:\Users\PMB\Assignment-1\Part-1A\evidence\harness-results\20261107T163721Z\coverage.json
+Required test coverage of 90.0% reached. Total coverage: 98.00%
+======================= 155 passed, 1 warning in 5.96s ========================
