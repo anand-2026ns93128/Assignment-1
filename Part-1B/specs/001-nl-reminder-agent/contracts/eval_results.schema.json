@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reminder-agent:eval_results:1.0.0",
+  "title": "RunReport",
+  "description": "One evaluation run (spec FR-040). Written to evidence/eval-runs/<run_id>/eval-results.json; the final run is copied to evidence/eval-results.json. Must contain no secrets.",
+  "type": "object",
+  "required": ["run_id", "timestamp_utc", "mode", "model", "schema_version", "prompt_version",
+               "dataset_sha256", "pricing", "threshold", "cases", "totals", "cost", "aborted",
+               "verdict", "verdict_reasons"],
+  "properties": {
+    "run_id": {"type": "string"},
+    "timestamp_utc": {"type": "string"},
+    "mode": {"enum": ["live", "replay"]},
+    "source_run_id": {"type": ["string", "null"]},
+    "model": {
+      "type": "object",
+      "required": ["name", "max_tokens", "temperature", "effort", "thinking"],
+      "properties": {
+        "name": {"type": "string"},
+        "max_tokens": {"type": "integer", "maximum": 300},
+        "temperature": {"type": ["number", "null"], "description": "null = not sent (model default); see research R-02"},
+        "effort": {"type": "string"},
+        "thinking": {"type": "string"}
+      }
+    },
+    "schema_version": {"type": "string"},
+    "prompt_version": {"type": "string"},
+    "dataset_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "pricing": {"type": "object"},
+    "threshold": {
+      "type": "object",
+      "required": ["min_pass_rate", "guardrail_pass_rate", "max_infra_errors", "semantic_pass_mark"],
+      "properties": {
+        "min_pass_rate": {"const": 0.85},
+        "guardrail_pass_rate": {"const": 1.0},
+        "max_infra_errors": {"const": 2},
+        "semantic_pass_mark": {"const": 0.9}
+      }
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["case_id", "category", "requirements", "status", "failed_layer", "violations",
+                     "semantic", "fallback", "attempts"],
+        "properties": {
+          "case_id": {"type": "string"},
+          "category": {"type": "string"},
+          "requirements": {"type": "array", "items": {"type": "string"}},
+          "status": {"enum": ["pass", "fail", "input_error", "infra_error", "not_run"]},
+          "failed_layer": {"enum": ["schema", "invariant", "semantic", null]},
+          "violations": {
+            "type": "array",
+            "items": {"type": "object", "required": ["id", "message"],
+                      "properties": {"id": {"type": "string"}, "message": {"type": "string"}}}
+          },
+          "semantic": {
+            "type": ["object", "null"],
+            "properties": {
+              "intent": {"type": "number"}, "due_at": {"type": "number"}, "keywords": {"type": "number"},
+              "recall": {"type": "number"}, "score": {"type": "number"}
+            }
+          },
+          "fallback": {"type": "boolean"},
+          "fallback_reason": {"type": ["string", "null"]},
+          "decision": {"type": ["object", "null"]},
+          "error": {"type": ["object", "null"]},
+          "raw_response_ref": {"type": ["string", "null"]},
+          "attempts": {"type": "integer"},
+          "input_tokens": {"type": "integer"},
+          "output_tokens": {"type": "integer"},
+          "cost_usd": {"type": "number"}
+        }
+      }
+    },
+    "totals": {"type": "object"},
+    "cost": {"type": "object"},
+    "aborted": {"type": "boolean"},
+    "abort_reason": {"type": ["string", "null"]},
+    "verdict": {"enum": ["PASS", "FAIL"]},
+    "verdict_reasons": {"type": "array", "items": {"type": "string"}}
+  }
+}

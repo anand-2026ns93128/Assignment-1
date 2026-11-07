@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reminder-agent:error_response:1.0.0",
+  "title": "ErrorResult",
+  "description": "Non-decision outcome, outside the decision schema (spec FR-003, FR-031). The CLI prints it to stderr.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["status", "category", "field", "message", "attempts"],
+  "properties": {
+    "status": {"type": "string", "enum": ["input_error", "infra_error"]},
+    "category": {
+      "type": "string",
+      "enum": ["invalid_now", "invalid_timezone", "invalid_reminders",
+               "timeout", "connection", "rate_limit", "server_error", "auth", "request_rejected"]
+    },
+    "field": {"type": ["string", "null"]},
+    "message": {"type": "string", "minLength": 1},
+    "attempts": {"type": "integer", "minimum": 0, "maximum": 2}
+  }
+}
