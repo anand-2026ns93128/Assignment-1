@@ -1,24 +1,3 @@
-<!--
-Sync Impact Report
-- Version change: (unfilled template) → 1.0.0
-- Modified principles: all template placeholders replaced (initial ratification)
-- Added principles:
-  I. Spec First (NON-NEGOTIABLE)
-  II. Structured, Schema-Validated Output
-  III. Deterministic Testability (Injected Clock and Timezone)
-  IV. Safety, Scope, and Clarification
-  V. Evaluation Integrity (NON-NEGOTIABLE)
-  VI. Layered Evaluation Harness (No LLM Judge)
-  VII. Failure Separation (infra_error)
-  VIII. Quality Gates
-  IX. Secrets Hygiene
-  X. Cost Control
-- Added sections: Technology & Model Constraints; Development Workflow & Evidence
-- Removed sections: none
-- Templates: dependent templates read this file at runtime; not modified by this command
-- Deferred TODOs: none
--->
-
 # Natural-Language Reminder Agent Constitution
 
 ## Core Principles
