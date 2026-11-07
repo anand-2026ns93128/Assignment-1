@@ -36,6 +36,13 @@ US4, US5, US6 = P3). Phase 9 is polish.
   ignores (Constitution III).
 - No `random`, `uuid`, `secrets`, `tempfile`, network or clock in `src/` (Constitution IV).
 - Each commit message names the task ID(s) it implements (Constitution I).
+- **Commit & completion rule** (Constitution II and workflow steps 5–6; analysis C1):
+  - A task is checked off, and work is committed, only at a phase **checkpoint**, after
+    `python .harness/run_harness.py` exits 0 (all gates PASS, coverage ≥ 90%).
+  - "Confirm red" tasks are a local check only and are never committed on their own. Their
+    harness run may be kept in `evidence/` and committed with the green checkpoint.
+  - Phase 1 cannot pass the gates on its own (it has no application tests), so the first commit
+    is the Phase 1 + Phase 2 checkpoint at T017.
 
 ---
 
@@ -56,7 +63,7 @@ US4, US5, US6 = P3). Phase 9 is polish.
   - `[tool.ruff]`: `target-version = "py311"`, `line-length = 100`.
     `[tool.ruff.lint] select = ["E", "F", "W", "I", "B", "UP"]`, with no `ignore` or
     `per-file-ignores`.
-  - `[tool.pytest.ini_options]`: `pythonpath = ["src"]`, `testpaths = ["tests"]`,
+  - `[tool.pytest.ini_options]`: `pythonpath = ["src"]`, `testpaths = ["tests", ".harness/tests"]`,
     `addopts = "--strict-markers"`.
   - `[tool.coverage.run]`: `source = ["smart_todo"]`.
   - `[tool.coverage.report]`: `fail_under = 90`, `show_missing = true`, with no `omit` and no
@@ -80,7 +87,10 @@ US4, US5, US6 = P3). Phase 9 is polish.
     missing file → FAIL.
   - `test_overall_and_exit_code`: all PASS → `"PASS"`, exit 0; any FAIL → `"FAIL"`, exit 1.
   - `test_unique_run_dir`: when `<timestamp>/` already exists the helper returns `<timestamp>-1/`.
-  - **Covers**: SC-001, FR-017 (gate evidence for every AC-01–AC-58).
+  - `test_python_check`: `python_status((3, 11, 9), final=True)` → PASS;
+    `python_status((3, 13, 2), final=True)` → FAIL; `python_status((3, 13, 2), final=False)` →
+    WARN, which does **not** make `overall` FAIL.
+  - **Covers**: SC-001, FR-017 (gate evidence for every AC-01–AC-59).
 - [ ] T005 Implement `.harness/run_harness.py`. Standard library only; it is run by the developer's
   Python, never imported by `src/`. Requirements:
   1. `ROOT = Path(__file__).resolve().parent.parent`. Every gate runs with `cwd=ROOT` using
@@ -98,7 +108,8 @@ US4, US5, US6 = P3). Phase 9 is polish.
      - **pytest**: `-m pytest --cov=smart_todo --cov-report=term-missing
        --cov-report=json:<run_dir>/coverage.json --junitxml=<run_dir>/junit.xml`. PASS iff the
        junit totals show `tests > 0`, `failures == 0`, `errors == 0`, `skipped == 0`. Do not
-       pass any `--cov-fail-under` override.
+       pass any `--cov-fail-under` override. Pytest collects both `tests/` and `.harness/tests/`
+       through `testpaths` (T002), so the harness self-tests are part of this gate.
      - **coverage**: read `<run_dir>/coverage.json` → `totals.percent_covered`. PASS iff ≥
        `COVERAGE_THRESHOLD = 90.0` (module constant; never lowered).
   4. For each process-based gate, write `<gate>.stdout.txt`, `<gate>.stderr.txt`, and keep the
@@ -109,17 +120,20 @@ US4, US5, US6 = P3). Phase 9 is polish.
      {"status", "exit_code", "command"}, "bandit": {"status", "exit_code", "command",
      "medium_high_count", "low_count"}, "pytest": {"status", "exit_code", "command", "tests",
      "failures", "errors", "skipped"}, "coverage": {"status", "percent", "threshold"}},
-     "warnings": [...]}`. Add the warning `"python_version is not 3.11"` when
-     `sys.version_info[:2] != (3, 11)` (research R10). This is a warning, not a gate.
+     "python": {"status", "version", "required": "3.11"}, "warnings": [...]}`.
+     The Python check (research R10): with `--final`, an interpreter other than 3.11 is a FAIL
+     that counts toward `overall`. Without `--final` it is `"WARN"`, it adds the warning
+     `"python_version is not 3.11"`, and it does not affect `overall`.
   6. Print a 4-line table `<gate>  PASS|FAIL  <detail>`, the overall result and the run
      directory path to stdout.
   7. Exit `0` iff every gate is PASS, otherwise `1`. On an unexpected harness exception, write
      what is known, print the error and exit `2`.
   8. Split the code into pure helpers so T004 can test them: `bandit_status(report)`,
      `pytest_status(junit_path)`, `coverage_status(coverage_json_path, threshold)`,
-     `overall(gates)`, `unique_run_dir(base, stamp)`, plus `main()` guarded by
+     `python_status(version_info, final)`, `overall(gates)`, `unique_run_dir(base, stamp)`, plus
+     `main(argv)` (parses `--final` with `argparse`) guarded by
      `if __name__ == "__main__":`.
-  - **Covers**: SC-001, FR-017; Constitution II gates for AC-01–AC-58.
+  - **Covers**: SC-001, FR-017; Constitution II gates for AC-01–AC-59.
 - [ ] T006 [P] Write `.harness/README.md`:
   - Purpose.
   - Install: `python -m pip install pytest pytest-cov ruff bandit`.
@@ -127,23 +141,25 @@ US4, US5, US6 = P3). Phase 9 is polish.
   - The files written per run: `ruff|bandit|pytest .stdout.txt/.stderr.txt`, `bandit.json`,
     `junit.xml`, `coverage.json`, `summary.json`.
   - Exit codes 0/1/2.
-  - Self-tests: `python -m pytest .harness/tests -p no:cacheprovider`. They sit outside
-    `testpaths`, so the gate run does not collect them.
+  - `--final`: also requires Python 3.11; used for the final report (T064).
+  - Self-tests: they are in `testpaths` (T002), so the pytest gate runs them. To run only them:
+    `python -m pytest .harness/tests`.
   - **Covers**: SC-001.
 - [ ] T007 Run `python -m pytest .harness/tests`: all harness self-tests must pass. Then run
   `python .harness/run_harness.py` once on the skeleton. Expect overall FAIL, because pytest
   collects 0 tests and coverage has no data. Confirm the run directory holds every file listed in
-  T005 step 4–5 and that the exit code is 1.
+  T005 step 4–5 and that the exit code is 1. This run is not committed (commit rule).
   - **Covers**: SC-001.
 
-**Checkpoint**: The harness works and records evidence.
+**Checkpoint**: The harness works and records evidence. Nothing is committed yet: Phase 1 has no
+application tests, so it cannot pass the gates on its own.
 
 ---
 
 ## Phase 2: Foundational (Blocking Prerequisites)
 
-**Purpose**: Errors, shared constants, test fixtures, a minimal store and the CLI pipeline that
-every story plugs into.
+**Purpose**: Errors, shared constants and validators, test fixtures, a minimal store, and the CLI
+pipeline that every story plugs into.
 
 **⚠️ CRITICAL**: No user-story work starts until this phase is complete.
 
@@ -161,17 +177,31 @@ every story plugs into.
   - `run_proc(*argv, cwd)`: `subprocess.run([sys.executable, "-m", "smart_todo", *argv],
     cwd=cwd, env={**os.environ, "PYTHONPATH": str(SRC_DIR)}, capture_output=True)`. It returns
     raw **bytes** stdout/stderr and the return code.
-  - **Covers**: FR-012, FR-016, FR-017 (test infrastructure for AC-01–AC-58).
+  - **Covers**: FR-012, FR-016, FR-017 (test infrastructure for AC-01–AC-59).
 - [ ] T009 [P] Write foundational unit tests **first** in `tests/unit/test_core.py`:
   - `InputError`/`DataFileError`/`UsageError` carry exit codes 1/3/2 and their message.
   - `main` turns an unexpected exception into stderr `Error: unexpected internal error.\n`, exit 1,
     and no `Traceback`. Use monkeypatch to make a handler raise `RuntimeError`.
-  - `main` turns `KeyboardInterrupt` into stderr `Error: interrupted.\n`, exit 130.
+  - `main` turns `KeyboardInterrupt` into stderr `Error: interrupted.\n`, exit 130 (AC-59).
+  - `main(["--help"])` returns 0 and writes text starting with `usage: todo` to stdout.
   - A missing data file loads as an empty store with `next_id == 1` and creates no file.
+  - A valid canonical file written with `write_store` loads as the expected `Store`, and `save`
+    followed by `load` returns an equal store. These cover `store.load`/`store.save` so that the
+    first checkpoint (T017) clears the 90% coverage gate (analysis U5).
   - The canonical serialisation of a sample store equals an exact expected byte string
     (contracts/data-file.md, *Canonical form*).
   - **Covers**: FR-013, FR-016, FR-017.
-- [ ] T010 [P] Implement `src/smart_todo/errors.py`:
+- [ ] T010 [P] Write unit tests **first** for the validators that several stories share (analysis F1):
+  - In `tests/unit/test_models.py` (new file):
+    - `parse_task_id`: accepts `"1"`, `"01"` (→ 1) and `"42"`; rejects `"0"`, `"-1"`, `"+1"`, `" 1"`,
+      `"1_0"`, `"abc"`, `""` and `"١"` with `Error: invalid task ID '<raw>'.`
+    - `validate_status`: accepts `todo`, `in_progress`, `done`; rejects `Done` and `finished` with
+      `Error: invalid status '<raw>' (expected: todo, in_progress, done).`
+  - In `tests/unit/test_service.py` (new file):
+    - `find_task` returns the matching task; an unknown ID raises a `TodoError` with message
+      `Error: task 99 not found.` and exit code 1.
+  - **Covers**: FR-010, FR-011, FR-006 (status filter values).
+- [ ] T011 [P] Implement `src/smart_todo/errors.py`:
   - `class TodoError(Exception)` with `message: str` and `exit_code: int`.
   - Subclasses `InputError` (exit 1), `UsageError` (exit 2; also carries `usage: str`) and
     `DataFileError` (exit 3).
@@ -181,7 +211,7 @@ every story plugs into.
     `invalid_priority(x)`, `invalid_status(x)`, `invalid_tag(x)`, `invalid_title()`,
     `invalid_transition(n, old, new)`, `nothing_to_update()`, `tag_clear_conflict()`.
   - **Covers**: FR-017, FR-011, FR-014, FR-015.
-- [ ] T011 [P] Implement the shared constants and entity in `src/smart_todo/models.py`. Validators
+- [ ] T012 [P] Implement the shared constants and entity in `src/smart_todo/models.py`. Validators
   are added per story:
   - `PRIORITIES = ("low", "medium", "high")`.
   - `PRIORITY_RANK = {"high": 0, "medium": 1, "low": 2}`.
@@ -190,7 +220,7 @@ every story plugs into.
   - `@dataclass(frozen=True) class Task: id: int; title: str; priority: str; status: str;
     tags: tuple[str, ...]`.
   - **Covers**: FR-001, FR-003, FR-005, FR-010.
-- [ ] T012 Implement a minimal `src/smart_todo/store.py`. US2 hardens it later:
+- [ ] T013 Implement a minimal `src/smart_todo/store.py`. US2 hardens it later:
   - `@dataclass(frozen=True) class Store: next_id: int; tasks: tuple[Task, ...]`.
   - `EMPTY = Store(1, ())`.
   - `load(path: str) -> Store`: `FileNotFoundError` → `EMPTY`. Otherwise read bytes, decode
@@ -199,9 +229,18 @@ every story plugs into.
   - `serialise(store) -> bytes`: canonical form per contracts/data-file.md. Tasks are sorted by
     `id`, key order `version, next_id, tasks` / `id, title, priority, status, tags`,
     `ensure_ascii=False`, `indent=2`, plus `"\n"`, UTF-8.
-  - `save(path, store)`: plain write of `serialise(store)` (made atomic in T030).
-  - **Covers**: FR-012, FR-013, FR-016 (depends on T010, T011).
-- [ ] T013 Implement the pipeline skeleton in `src/smart_todo/cli.py`:
+  - `save(path, store)`: plain write of `serialise(store)` (made atomic in T034).
+  - **Covers**: FR-012, FR-013, FR-016 (depends on T011, T012).
+- [ ] T014 Implement the shared validators (analysis F1):
+  - In `src/smart_todo/models.py`:
+    - `parse_task_id(raw: str) -> int`: `re.fullmatch(r"[0-9]+", raw, flags=re.ASCII)` and
+      `int(raw) >= 1`, otherwise `errors.invalid_task_id(raw)`.
+    - `validate_status(raw: str) -> str`: must be in `STATUSES` (case-sensitive), otherwise
+      `errors.invalid_status(raw)`.
+  - Create `src/smart_todo/service.py` with `find_task(store, task_id) -> Task`, which raises
+    `errors.task_not_found(task_id)` when no task has that ID.
+  - **Covers**: FR-010, FR-011 (depends on T010, T011–T013).
+- [ ] T015 Implement the pipeline skeleton in `src/smart_todo/cli.py`:
   - `class _Parser(argparse.ArgumentParser)`. `error(message)` raises
     `UsageError(usage=self.format_usage(), message=f"{self.prog}: error: {message}\n")`;
     `exit(status=0, message=None)` raises an internal `_Exit(status, message)` (for `--help`).
@@ -215,21 +254,24 @@ every story plugs into.
        stdout/stderr when available (research R7).
     2. Parse.
     3. Dispatch through a dict `{"add": _cmd_add, …}`. Each handler returns `list[str]` of
-       stdout lines and raises `TodoError` on failure. Handlers not built yet raise
-       `NotImplementedError`.
+       stdout lines and raises `TodoError` on failure. A command whose handler is not built yet
+       is simply missing from the dict; the `KeyError` falls through to step 9. Do not write
+       placeholder handlers or placeholder tests (they would later have to be deleted, which
+       Constitution III forbids).
     4. Write the lines, each ending in `"\n"`, and return 0.
     5. `except UsageError` → write `usage + message` to stderr, return 2.
     6. `_Exit` → write message to stdout if status 0, otherwise to stderr; return status.
     7. `except TodoError as e` → write `e.message + "\n"` to stderr, return `e.exit_code`.
     8. `except KeyboardInterrupt` → `Error: interrupted.`, return 130.
     9. `except Exception` → `Error: unexpected internal error.`, return 1.
-  - **Covers**: FR-017, FR-019 step 1, FR-012 (`--file`) (depends on T010–T012).
-- [ ] T014 Implement `src/smart_todo/__main__.py`: `import sys; from smart_todo.cli import main;
+  - **Covers**: FR-017, FR-019 step 1, FR-012 (`--file`) (depends on T011–T013).
+- [ ] T016 Implement `src/smart_todo/__main__.py`: `import sys; from smart_todo.cli import main;
   sys.exit(main())`.
   - **Covers**: FR-017.
-- [ ] T015 Run the harness. T009 tests must pass and ruff/bandit must be PASS. Coverage may still be
-  below 90%; record the run directory.
-  - **Covers**: FR-013, FR-016, FR-017.
+- [ ] T017 Run the harness. All four gates must PASS, including coverage ≥ 90% (provided by the
+  T009 and T010 tests). This is the **first commit point**: commit Phase 1 + Phase 2 together,
+  with the evidence directory, and check off T001–T017.
+  - **Covers**: FR-010, FR-011, FR-013, FR-016, FR-017.
 
 **Checkpoint**: Pipeline in place. Story phases can now begin.
 
@@ -244,7 +286,7 @@ every story plugs into.
 
 ### Tests for User Story 1 (write first) ⚠️
 
-- [ ] T016 [P] [US1] Write acceptance tests in `tests/acceptance/test_us1_add_list.py` using the
+- [ ] T018 [P] [US1] Write acceptance tests in `tests/acceptance/test_us1_add_list.py` using the
   `run` fixture. Each asserts exact stdout, exact stderr, the exit code, and, for error cases,
   `data_bytes()` before == after (`None` == `None` for a fresh store):
   - `test_AC01_add_task_with_defaults`
@@ -263,8 +305,9 @@ every story plugs into.
     containing no tasks".
   - `test_AC56_title_with_tab_rejected`
   - `test_AC57_unicode_title_of_100_chars_accepted`. Use `"é" * 100`.
-  - **Covers**: AC-01–AC-13, AC-56, AC-57.
-- [ ] T017 [P] [US1] Write unit tests in `tests/unit/test_models.py` for the US1 validators:
+  - **Covers**: AC-01–AC-13, AC-56, AC-57, FR-018.
+- [ ] T019 [P] [US1] Add unit tests to `tests/unit/test_models.py` (created in Phase 2) for the US1
+  validators:
   - `validate_title`:
     - Rejects raw values containing `"\n"`, `"\r"`, `"\t"`, `"\x00"`, `"\x7f"` or `"\x85"`, even
       at the ends (`"Buy milk\n"`).
@@ -275,7 +318,7 @@ every story plugs into.
     `["home", "HOME", "errand"]` into `("home", "errand")`; `None` → `()`; the error message
     shows the raw tag.
   - **Covers**: FR-002, FR-003, FR-004.
-- [ ] T018 [P] [US1] Write unit tests in `tests/unit/test_service.py` for `add_task`, `list_tasks`
+- [ ] T020 [P] [US1] Add unit tests to `tests/unit/test_service.py` (created in Phase 2) for `add_task`, `list_tasks`
   (no filters) and `format_line`:
   - The new task gets `id == store.next_id`, `status == "todo"`, and the new store has
     `next_id + 1`.
@@ -283,14 +326,27 @@ every story plugs into.
   - `format_line(Task(2, "Pay rent", "high", "todo", ("home", "bills")))` ==
     `"2 [todo] (high) Pay rent #home #bills"`.
   - **Covers**: FR-001, FR-005, FR-007.
-- [ ] T019 [US1] Run `python -m pytest tests/acceptance/test_us1_add_list.py tests/unit/test_models.py
-  tests/unit/test_service.py` and confirm the new tests **fail** (red) before any implementation.
-  Note the failure count in the commit message.
+- [ ] T021 [P] [US1] Write the launcher test **first** in `tests/acceptance/test_launcher.py`
+  (analysis I2):
+  - `test_SC002_launcher_adds_and_lists_with_no_setup`.
+  - Pick the launcher by platform **inside** the test, never with `skip`/`skipif`: if
+    `os.name == "nt"` use `[str(ROOT / "todo.cmd")]`, otherwise `["sh", str(ROOT / "todo")]`.
+  - Run it with `subprocess.run(..., cwd=tmp_path, capture_output=True)`. Use an environment
+    copied from `os.environ` with `PYTHONPATH` **removed**, and with `str(Path(sys.executable).parent)`
+    put first on `PATH`, so the launcher finds the same interpreter that runs the tests.
+  - Run `add "Buy milk"` and then `list`. Assert both exit codes are 0, stdout is exactly
+    `b"Added task 1: Buy milk\n"` and then `b"1 [todo] (medium) Buy milk\n"`, and
+    `tmp_path / "todo.json"` exists.
+  - **Covers**: SC-002, FR-012, FR-001.
+- [ ] T022 [US1] Run `python -m pytest tests/acceptance/test_us1_add_list.py tests/unit/test_models.py
+  tests/unit/test_service.py tests/acceptance/test_launcher.py` and confirm the new tests **fail** (red)
+  before any implementation.
+  This is a local check only; do not commit (commit rule).
   - **Covers**: AC-01–AC-13, AC-56, AC-57.
 
 ### Implementation for User Story 1
 
-- [ ] T020 [US1] Add validators to `src/smart_todo/models.py`. Each raises the matching `errors.*`
+- [ ] T023 [US1] Add validators to `src/smart_todo/models.py`. Each raises the matching `errors.*`
   helper:
   - `validate_title(raw: str) -> str`: if any `unicodedata.category(ch) == "Cc"` → invalid title;
     `t = raw.strip()`; require `1 <= len(t) <= 100`; return `t`.
@@ -298,25 +354,47 @@ every story plugs into.
   - `normalize_tags(raws: list[str] | None) -> tuple[str, ...]`: each raw must fully match
     `re.compile(r"[A-Za-z0-9_-]{1,20}")` (use `fullmatch`; ASCII only). Lowercase it, drop
     duplicates, keep first-seen order.
-  - **Covers**: FR-002, FR-003, FR-004 (depends on T017).
-- [ ] T021 [US1] Add to `src/smart_todo/service.py`:
+  - **Covers**: FR-002, FR-003, FR-004 (depends on T019).
+- [ ] T024 [US1] Add to `src/smart_todo/service.py`:
   - `add_task(store, title, priority, tags) -> tuple[Store, Task]`: new `id = store.next_id`,
     status `"todo"`; returns a new `Store(next_id + 1, tasks + (task,))`.
   - `list_tasks(store, tag=None, status=None) -> list[Task]`: sorted by
-    `(PRIORITY_RANK[t.priority], t.id)`; filters come in T048.
+    `(PRIORITY_RANK[t.priority], t.id)`; filters come in T052.
   - `format_line(task) -> str`: `f"{id} [{status}] ({priority}) {title}"` +
     `"".join(f" #{t}" for t in tags)`.
-  - **Covers**: FR-001, FR-005, FR-007 (depends on T018, T020).
-- [ ] T022 [US1] Implement `_cmd_add` and `_cmd_list` in `src/smart_todo/cli.py`:
+  - **Covers**: FR-001, FR-005, FR-007 (depends on T020, T023).
+- [ ] T025 [US1] Implement `_cmd_add` and `_cmd_list` in `src/smart_todo/cli.py`:
   - **add**: validate in FR-019 order. Priority is `args.priority or DEFAULT_PRIORITY`, then
     title, then tags. Then `store.load(args.file)`, then `service.add_task`, then
     `store.save(args.file, …)`. Return `[f"Added task {id}: {title}"]`.
   - **list**: `store.load` → `service.list_tasks`. Return the formatted lines, or
     `["No tasks found."]`. **Never** call `save` (FR-013).
-  - **Covers**: AC-01–AC-13, AC-56, AC-57, FR-001–FR-005, FR-019 (depends on T021).
-- [ ] T023 [US1] Run the harness. The US1 tests from T016–T018 must be green, ruff/bandit PASS.
-  Record the run directory.
-  - **Covers**: AC-01–AC-13, AC-56, AC-57.
+  - **Covers**: AC-01–AC-13, AC-56, AC-57, FR-001–FR-005, FR-019 (depends on T024).
+- [ ] T026 [US1] Create the stdlib-only launchers at the repository root (analysis I2, research R8):
+  - `todo` (POSIX `sh`, LF line endings):
+
+    ```sh
+    #!/bin/sh
+    DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+    PYTHONPATH="$DIR/src${PYTHONPATH:+:$PYTHONPATH}" exec python3 -m smart_todo "$@"
+    ```
+
+  - `todo.cmd` (Windows):
+
+    ```bat
+    @echo off
+    setlocal
+    set "PYTHONPATH=%~dp0src;%PYTHONPATH%"
+    python -m smart_todo %*
+    exit /b %ERRORLEVEL%
+    ```
+
+  - `.gitattributes` containing `todo text eol=lf` and `*.cmd text eol=crlf`.
+  - Mark `todo` executable in git: `git update-index --chmod=+x todo` (after it is first added).
+  - **Covers**: SC-002, FR-012 (depends on T025, T021).
+- [ ] T027 [US1] Run the harness: all four gates PASS, with the T018–T020 and T021 tests green. Then commit
+  the US1 checkpoint with its evidence directory and check off T018–T027.
+  - **Covers**: AC-01–AC-13, AC-56, AC-57, SC-002.
 
 **Checkpoint**: MVP. Tasks can be added and listed.
 
@@ -332,7 +410,7 @@ IDs; corrupt the file and confirm commands refuse to touch it (AC-14–AC-23).
 
 ### Tests for User Story 2 (write first) ⚠️
 
-- [ ] T024 [P] [US2] Write acceptance tests in `tests/acceptance/test_us2_persistence.py`:
+- [ ] T028 [P] [US2] Write acceptance tests in `tests/acceptance/test_us2_persistence.py`:
   - `test_AC14_task_persists_between_runs`: two separate `run` calls.
   - `test_AC15_id_not_reused_after_deleting_highest`: `write_store(4, [tasks 1, 2])` stands in
     for "task 3 deleted".
@@ -342,17 +420,18 @@ IDs; corrupt the file and confirm commands refuse to touch it (AC-14–AC-23).
     bytes unchanged.
   - `test_AC19_add_refuses_non_json_file`
   - `test_AC20_list_refuses_wrong_shape_json`: `[]`.
-  - `test_AC21_interrupted_save_keeps_previous_data`: monkeypatch `smart_todo.store.os.replace`
+  - `test_AC21_failed_save_keeps_previous_data`: monkeypatch `smart_todo.store.os.replace`
     to raise `OSError`. Assert exit 3, stderr
     `Error: could not save data file 'todo.json'; previous data was kept.\n`, bytes unchanged, no
-    `todo.json.tmp` left, and a following `todo list` prints task 1.
-  - `test_AC21_keyboard_interrupt_during_save_keeps_previous_data`: patch `os.replace` to raise
-    `KeyboardInterrupt`. Assert exit 130, bytes unchanged, no `.tmp` left.
+    `todo.json.tmp` left, stdout empty, and a following `todo list` prints task 1.
+  - `test_AC59_interrupt_during_save_keeps_previous_data`: patch `smart_todo.store.os.replace` to
+    raise `KeyboardInterrupt`. Assert exit 130, stderr `Error: interrupted.\n`, stdout empty,
+    bytes unchanged, and no `.tmp` left.
   - `test_AC22_file_option_uses_given_path`: assert `todo.json` does not exist afterwards.
   - `test_AC23_same_input_gives_identical_results`: run the same `update`/`add` on two
     identical copies in two sub-directories; compare stdout, stderr, code and resulting bytes.
-  - **Covers**: AC-14–AC-23.
-- [ ] T025 [P] [US2] Write unit tests in `tests/unit/test_store.py`. Each data-file validity rule
+  - **Covers**: AC-14–AC-23, AC-59, FR-018.
+- [ ] T029 [P] [US2] Write unit tests in `tests/unit/test_store.py`. Each data-file validity rule
   in contracts/data-file.md gets at least one test asserting `DataFileError` with the
   corrupt-file message and an unchanged file. Name them `test_FR014_rule<N>_<case>`:
   - Rule 1: invalid UTF-8 bytes `b"\xff"`; a path that is a directory.
@@ -373,22 +452,22 @@ IDs; corrupt the file and confirm commands refuse to touch it (AC-14–AC-23).
     - `test_FR016_serialise_is_canonical_and_sorted`: tasks given out of order are written in
       ascending `id`.
   - **Covers**: FR-014, FR-015, FR-016, FR-007.
-- [ ] T026 [P] [US2] Create `tests/acceptance/test_subprocess.py` with two tests that use
+- [ ] T030 [P] [US2] Create `tests/acceptance/test_subprocess.py` with two tests that use
   `run_proc`:
   - `test_AC14_persists_across_processes`: real separate processes `add` then `list`.
   - `test_AC23_byte_identical_across_processes`: the same command twice on identical file copies.
     Raw stdout/stderr bytes, exit codes and resulting files are identical, and stdout contains no
     `b"\r\n"` (research R7).
   - **Covers**: AC-14, AC-23, FR-016.
-- [ ] T027 [US2] Run `python -m pytest tests/acceptance/test_us2_persistence.py tests/unit/test_store.py
+- [ ] T031 [US2] Run `python -m pytest tests/acceptance/test_us2_persistence.py tests/unit/test_store.py
   tests/acceptance/test_subprocess.py` and confirm the strict-validation and atomic-save tests
-  **fail** (red). Some tests, e.g. AC-14 and AC-22, may already pass thanks to T012/T013; list
-  them in the commit message.
+  **fail** (red). Some tests, e.g. AC-14 and AC-22, may already pass thanks to T013/T015; list
+  them in the US2 checkpoint commit message. This is a local check only; do not commit.
   - **Covers**: AC-14–AC-23.
 
 ### Implementation for User Story 2
 
-- [ ] T028 [US2] Replace the lenient loader in `src/smart_todo/store.py` with strict validation, in
+- [ ] T032 [US2] Replace the lenient loader in `src/smart_todo/store.py` with strict validation, in
   this order (rules 1–10 of contracts/data-file.md):
   - Read bytes (`OSError` → corrupt).
   - `bytes.decode("utf-8")` (strict).
@@ -403,27 +482,27 @@ IDs; corrupt the file and confirm commands refuse to touch it (AC-14–AC-23).
   - `tags`: a `list` of `str`; `models.normalize_tags(tags) == tuple(tags)`.
   - Catch every `TodoError`/`ValueError`/`TypeError`/`KeyError` raised during validation and
     re-raise `errors.corrupt_file(path)`, keeping the path exactly as typed.
-  - **Covers**: FR-014, FR-007, AC-18–AC-20 (depends on T025).
-- [ ] T029 [US2] Add `_no_duplicate_keys(pairs)` in `src/smart_todo/store.py`. It raises
+  - **Covers**: FR-014, FR-007, AC-18–AC-20 (depends on T029).
+- [ ] T033 [US2] Add `_no_duplicate_keys(pairs)` in `src/smart_todo/store.py`. It raises
   `ValueError` on a repeated key; otherwise it returns `dict(pairs)`.
   - **Covers**: FR-014.
-- [ ] T030 [US2] Make `save(path, store)` in `src/smart_todo/store.py` atomic (research R6):
+- [ ] T034 [US2] Make `save(path, store)` in `src/smart_todo/store.py` atomic (research R6):
   - `tmp = path + ".tmp"`.
   - `open(tmp, "wb")` → write `serialise(store)` → `flush()` → `os.fsync(f.fileno())` → close →
     `os.replace(tmp, path)`.
   - On `OSError`: remove `tmp` (suppress `OSError`), raise `errors.save_failed(path)`.
   - On `BaseException` (e.g. `KeyboardInterrupt`): remove `tmp`, re-raise.
   - No `tempfile` and no random names.
-  - **Covers**: FR-015, AC-21 (depends on T028).
-- [ ] T031 [US2] Check `src/smart_todo/cli.py`:
+  - **Covers**: FR-015, AC-21 (depends on T032).
+- [ ] T035 [US2] Check `src/smart_todo/cli.py`:
   - `list` never calls `save` (AC-17).
   - Every handler passes `args.file` unchanged to `load`/`save`, so messages show the path as
     typed (spec Assumptions).
   - Nothing reads the clock or environment.
-  - Fix anything the T024/T026 tests expose.
+  - Fix anything the T028/T030 tests expose.
   - **Covers**: FR-012, FR-013, FR-016, AC-17, AC-22, AC-23.
-- [ ] T032 [US2] Run the harness. All US1 and US2 tests are green; ruff/bandit PASS. Record the run
-  directory.
+- [ ] T036 [US2] Run the harness: all four gates PASS, with all US1 and US2 tests green. Then commit
+  the US2 checkpoint with its evidence directory and check off T028–T036.
   - **Covers**: AC-14–AC-23.
 
 **Checkpoint**: US1 + US2 together are a trustworthy MVP.
@@ -440,7 +519,7 @@ and the resulting `todo list` (AC-24–AC-32).
 
 ### Tests for User Story 3 (write first) ⚠️
 
-- [ ] T033 [P] [US3] Write acceptance tests in `tests/acceptance/test_us3_status.py`. Seed with
+- [ ] T037 [P] [US3] Write acceptance tests in `tests/acceptance/test_us3_status.py`. Seed with
   `write_store`; error cases assert the bytes are unchanged:
   - `test_AC24_todo_to_in_progress`: includes the `todo list` line
     `1 [in_progress] (medium) Buy milk`.
@@ -452,39 +531,36 @@ and the resulting `todo list` (AC-24–AC-32).
   - `test_AC30_same_status_rejected`
   - `test_AC31_invalid_status_value_rejected`
   - `test_AC32_unknown_id_rejected`
-  - **Covers**: AC-24–AC-32.
-- [ ] T034 [P] [US3] Add unit tests to `tests/unit/test_models.py`:
-  - `parse_task_id`: accepts `"1"` and `"01"` (→ 1) and `"42"`; rejects `"0"`, `"-1"`, `"+1"`,
-    `" 1"`, `"1_0"`, `"abc"`, `""` and `"١"`. The message shows the raw value.
-  - `validate_status`: accepts the 3 values; rejects `Done` and `finished`.
+  - **Covers**: AC-24–AC-32, FR-018.
+- [ ] T038 [P] [US3] Add unit tests to `tests/unit/test_models.py`. `parse_task_id` and
+  `validate_status` are already tested in Phase 2 (T010):
   - `check_transition`: the full 3×3 matrix from data-model.md. Exactly 3 allowed; the other 6
     raise `invalid_transition`.
-  - **Covers**: FR-010, FR-011.
-- [ ] T035 [US3] Run `python -m pytest tests/acceptance/test_us3_status.py tests/unit/test_models.py`
-  and confirm the new tests **fail** (red).
+  - **Covers**: FR-010.
+- [ ] T039 [US3] Run `python -m pytest tests/acceptance/test_us3_status.py tests/unit/test_models.py`
+  and confirm the new tests **fail** (red). Local check only; do not commit.
   - **Covers**: AC-24–AC-32.
 
 ### Implementation for User Story 3
 
-- [ ] T036 [US3] Add to `src/smart_todo/models.py`:
-  - `parse_task_id(raw: str) -> int`: `re.fullmatch(r"[0-9]+", raw, flags=re.ASCII)` and
-    `int(raw) >= 1`, otherwise `errors.invalid_task_id(raw)`.
-  - `validate_status(raw) -> str`: in `STATUSES`, case-sensitive.
+- [ ] T040 [US3] Add to `src/smart_todo/models.py`. `parse_task_id` and `validate_status` already
+  exist from Phase 2 (T014):
   - `ALLOWED_TRANSITIONS = frozenset({("todo", "in_progress"), ("in_progress", "done"),
     ("todo", "done")})`.
   - `check_transition(task_id, old, new)`: if the pair is not in the set →
     `errors.invalid_transition(task_id, old, new)`.
-  - **Covers**: FR-010, FR-011 (depends on T034).
-- [ ] T037 [US3] Add to `src/smart_todo/service.py`:
-  - `find_task(store, task_id) -> Task`: raises `errors.task_not_found(task_id)`.
-  - `set_status(store, task_id, new) -> tuple[Store, str, str]`: find → `check_transition` →
+  - **Covers**: FR-010 (depends on T038).
+- [ ] T041 [US3] Add to `src/smart_todo/service.py`:
+  - `set_status(store, task_id, new) -> tuple[Store, str, str]`: `find_task` (Phase 2, T014) →
+    `check_transition` →
     return the new store with the task replaced via `dataclasses.replace`, plus `(old, new)`.
-  - **Covers**: FR-010, FR-011 (depends on T036).
-- [ ] T038 [US3] Implement `_cmd_status` in `src/smart_todo/cli.py`:
+  - **Covers**: FR-010, FR-011 (depends on T040).
+- [ ] T042 [US3] Implement `_cmd_status` in `src/smart_todo/cli.py`:
   - `parse_task_id` → `validate_status` → `load` → `service.set_status` → `save`.
   - Return `[f"Task {id}: {old} -> {new}"]`.
-  - **Covers**: AC-24–AC-32, FR-010, FR-011, FR-019 (depends on T037).
-- [ ] T039 [US3] Run the harness. US1–US3 tests are green; ruff/bandit PASS.
+  - **Covers**: AC-24–AC-32, FR-010, FR-011, FR-019 (depends on T041).
+- [ ] T043 [US3] Run the harness: all four gates PASS, with US1–US3 tests green. Then commit the US3
+  checkpoint with its evidence directory and check off T037–T043.
   - **Covers**: AC-24–AC-32.
 
 **Checkpoint**: Status tracking works.
@@ -500,7 +576,7 @@ and the resulting `todo list` (AC-24–AC-32).
 
 ### Tests for User Story 4 (write first) ⚠️
 
-- [ ] T040 [P] [US4] Write acceptance tests in `tests/acceptance/test_us4_update_delete.py`:
+- [ ] T044 [P] [US4] Write acceptance tests in `tests/acceptance/test_us4_update_delete.py`:
   - `test_AC33_update_title`
   - `test_AC34_update_priority`
   - `test_AC35_update_tags_replaces_set`
@@ -516,21 +592,21 @@ and the resulting `todo list` (AC-24–AC-32).
   - `test_AC45_delete_zero_id_rejected`
   - `test_AC58_update_done_task_keeps_status`
   - Error cases assert the bytes are unchanged.
-  - **Covers**: AC-33–AC-45, AC-58.
-- [ ] T041 [P] [US4] Add unit tests to `tests/unit/test_service.py`:
+  - **Covers**: AC-33–AC-45, AC-58, FR-018.
+- [ ] T045 [P] [US4] Add unit tests to `tests/unit/test_service.py`:
   - `delete_task` keeps `next_id` unchanged (FR-007).
   - `update_task`: changes only the given fields; never changes `status`; `--tag` replaces the
     whole set; `clear_tags` gives `()`; no change requested → `nothing_to_update`; `tags` +
     `clear_tags` → `tag_clear_conflict`; an unknown id → `task_not_found`, checked **before** the
     other two (FR-019 step 4 before step 5).
   - **Covers**: FR-007, FR-008, FR-009, FR-019.
-- [ ] T042 [US4] Run `python -m pytest tests/acceptance/test_us4_update_delete.py tests/unit/test_service.py`
-  and confirm the new tests **fail** (red).
+- [ ] T046 [US4] Run `python -m pytest tests/acceptance/test_us4_update_delete.py tests/unit/test_service.py`
+  and confirm the new tests **fail** (red). Local check only; do not commit.
   - **Covers**: AC-33–AC-45, AC-58.
 
 ### Implementation for User Story 4
 
-- [ ] T043 [US4] Add to `src/smart_todo/service.py`:
+- [ ] T047 [US4] Add to `src/smart_todo/service.py`:
   - `update_task(store, task_id, title=None, priority=None, tags=None, clear_tags=False) ->
     Store`, in this order:
     1. `find_task`.
@@ -539,8 +615,8 @@ and the resulting `todo list` (AC-24–AC-32).
     3. If `tags is not None and clear_tags` → `tag_clear_conflict`.
     4. Build with `dataclasses.replace`; status is never touched (AC-58).
   - `delete_task(store, task_id) -> Store`: `find_task`, then remove it; `next_id` unchanged.
-  - **Covers**: FR-007, FR-008, FR-009, FR-019 (depends on T041).
-- [ ] T044 [US4] Implement `_cmd_update` and `_cmd_delete` in `src/smart_todo/cli.py`:
+  - **Covers**: FR-007, FR-008, FR-009, FR-019 (depends on T045).
+- [ ] T048 [US4] Implement `_cmd_update` and `_cmd_delete` in `src/smart_todo/cli.py`:
   - **update**:
     1. `parse_task_id`.
     2. If `--priority` was given, `validate_priority`.
@@ -550,8 +626,9 @@ and the resulting `todo list` (AC-24–AC-32).
     5. `load` → `service.update_task` → `save` → `["Updated task {id}."]`.
   - **delete**: `parse_task_id` → `load` → `service.delete_task` → `save` →
     `["Deleted task {id}."]`.
-  - **Covers**: AC-33–AC-45, AC-58, FR-008, FR-009, FR-011, FR-019 (depends on T043).
-- [ ] T045 [US4] Run the harness. US1–US4 tests are green; ruff/bandit PASS.
+  - **Covers**: AC-33–AC-45, AC-58, FR-008, FR-009, FR-011, FR-019 (depends on T047).
+- [ ] T049 [US4] Run the harness: all four gates PASS, with US1–US4 tests green. Then commit the US4
+  checkpoint with its evidence directory and check off T044–T049.
   - **Covers**: AC-33–AC-45, AC-58.
 
 **Checkpoint**: Full CRUD works.
@@ -567,7 +644,7 @@ and the resulting `todo list` (AC-24–AC-32).
 
 ### Tests for User Story 5 (write first) ⚠️
 
-- [ ] T046 [P] [US5] Write acceptance tests in `tests/acceptance/test_us5_filter.py`:
+- [ ] T050 [P] [US5] Write acceptance tests in `tests/acceptance/test_us5_filter.py`:
   - A module-level fixture seeds, via `write_store(5, …)`:
     `1 "A" high [work] todo`, `2 "B" low [home] in_progress`, `3 "C" medium [work, home] done`,
     `4 "D" high [] in_progress`.
@@ -581,25 +658,26 @@ and the resulting `todo list` (AC-24–AC-32).
     - `test_AC51_invalid_status_reported_before_corrupt_file`: corrupt `todo.json` + `--status
       finished` → invalid status, exit 1 (FR-019).
     - `test_AC55_invalid_tag_filter_rejected`
-  - **Covers**: AC-46–AC-51, AC-55, FR-019.
-- [ ] T047 [US5] Run `python -m pytest tests/acceptance/test_us5_filter.py` and confirm the new tests
-  **fail** (red).
+  - **Covers**: AC-46–AC-51, AC-55, FR-018, FR-019.
+- [ ] T051 [US5] Run `python -m pytest tests/acceptance/test_us5_filter.py` and confirm the new tests
+  **fail** (red). Local check only; do not commit.
   - **Covers**: AC-46–AC-51, AC-55.
 
 ### Implementation for User Story 5
 
-- [ ] T048 [US5] Extend `list_tasks(store, tag=None, status=None)` in `src/smart_todo/service.py`:
+- [ ] T052 [US5] Extend `list_tasks(store, tag=None, status=None)` in `src/smart_todo/service.py`:
   - Keep tasks where `(tag is None or tag in t.tags) and (status is None or t.status == status)`.
     `tag` is already lowercase.
   - Then apply the existing sort.
-  - **Covers**: FR-005, FR-006 (depends on T046).
-- [ ] T049 [US5] Update `_cmd_list` in `src/smart_todo/cli.py`:
+  - **Covers**: FR-005, FR-006 (depends on T050).
+- [ ] T053 [US5] Update `_cmd_list` in `src/smart_todo/cli.py`:
   - If `--status` was given, `validate_status`.
   - Then, if `--tag` was given, `normalize_tags([tag])[0]`.
   - Both happen **before** `load` (FR-019 step 2 order: status before tags).
   - Pass both to `list_tasks`; still never save.
-  - **Covers**: AC-46–AC-51, AC-55, FR-006, FR-019 (depends on T048).
-- [ ] T050 [US5] Run the harness. US1–US5 tests are green; ruff/bandit PASS.
+  - **Covers**: AC-46–AC-51, AC-55, FR-006, FR-019 (depends on T052).
+- [ ] T054 [US5] Run the harness: all four gates PASS, with US1–US5 tests green. Then commit the US5
+  checkpoint with its evidence directory and check off T050–T054.
   - **Covers**: AC-46–AC-51, AC-55.
 
 **Checkpoint**: Filtering works.
@@ -614,33 +692,34 @@ and the resulting `todo list` (AC-24–AC-32).
 
 ### Tests for User Story 6 (write first) ⚠️
 
-- [ ] T051 [P] [US6] Write acceptance tests in `tests/acceptance/test_us6_usage.py`, in-process via
+- [ ] T055 [P] [US6] Write acceptance tests in `tests/acceptance/test_us6_usage.py`, in-process via
   `run`:
   - `test_AC52_unknown_command_shows_usage`: code 2, stdout `""`, stderr first line starts with
     `usage: todo`, no `Traceback`, bytes unchanged.
   - `test_AC53_no_arguments_shows_usage`
   - `test_AC54_add_without_title_shows_usage`
   - **Covers**: AC-52–AC-54.
-- [ ] T052 [US6] Append three subprocess tests to `tests/acceptance/test_subprocess.py`:
+- [ ] T056 [US6] Append three subprocess tests to `tests/acceptance/test_subprocess.py`:
   - `test_AC52_unknown_command_in_real_process`
   - `test_AC53_no_arguments_in_real_process`
   - `test_AC54_add_without_title_in_real_process`
   - Each asserts the return code is 2, `stderr.decode("utf-8").splitlines()[0].startswith("usage:
     todo")` and `b"Traceback" not in stderr`.
-  - This task runs after T026 because it edits the same file.
+  - This task runs after T030 because it edits the same file.
   - **Covers**: AC-52–AC-54, FR-017.
-- [ ] T053 [US6] Run `python -m pytest tests/acceptance/test_us6_usage.py tests/acceptance/test_subprocess.py`.
-  These tests may already be green because the parser came in T013. If so, record that they pass
-  without code changes. Otherwise confirm red.
+- [ ] T057 [US6] Run `python -m pytest tests/acceptance/test_us6_usage.py tests/acceptance/test_subprocess.py`.
+  These tests may already be green because the parser came in T015. If so, record that they pass
+  without code changes. Otherwise confirm red. Local check only; do not commit.
   - **Covers**: AC-52–AC-54.
 
 ### Implementation for User Story 6
 
-- [ ] T054 [US6] Fix anything T051/T052 expose in `_Parser`/`main` in `src/smart_todo/cli.py`. The
+- [ ] T058 [US6] Fix anything T055/T056 expose in `_Parser`/`main` in `src/smart_todo/cli.py`. The
   usage text goes to stderr only (stdout stays empty), the message line follows it, the exit code
   is 2, and `--help` still exits 0 to stdout.
   - **Covers**: AC-52–AC-54, FR-017.
-- [ ] T055 [US6] Run the harness. All AC tests are green; ruff/bandit PASS.
+- [ ] T059 [US6] Run the harness: all four gates PASS, with all AC tests green. Then commit the US6
+  checkpoint with its evidence directory and check off T055–T059.
   - **Covers**: AC-52–AC-54.
 
 **Checkpoint**: All six user stories work independently.
@@ -649,7 +728,7 @@ and the resulting `todo list` (AC-24–AC-32).
 
 ## Phase 9: Polish & Cross-Cutting Concerns
 
-- [ ] T056 [P] Write `tests/unit/test_check_order.py`. One test per row of the *Check order*
+- [ ] T060 [P] Write `tests/unit/test_check_order.py`. One test per row of the *Check order*
   examples table in contracts/cli.md, named `test_FR019_<case>`:
   - `status 99 finished` → invalid status.
   - `status abc finished` → invalid ID.
@@ -660,24 +739,25 @@ and the resulting `todo list` (AC-24–AC-32).
   - Also: `delete 99` with a corrupt file → exit 3 (load before lookup).
   - Fix `src/smart_todo/cli.py` if any test fails.
   - **Covers**: FR-019, FR-017.
-- [ ] T057 [P] Write `tests/unit/test_performance.py::test_SC003_commands_under_one_second_with_1000_tasks`:
+- [ ] T061 [P] Write `tests/unit/test_performance.py::test_SC003_commands_under_one_second_with_1000_tasks`:
   - `write_store(1001, [1000 tasks])`.
   - Time `list`, `add`, `update`, `status` and `delete` in-process with `time.perf_counter()`.
   - Assert each is < 1.0 s.
   - **Covers**: SC-003, FR-005, FR-012.
-- [ ] T058 Check traceability with the script in quickstart.md (*Traceability check*). Expected
-  output: `58 ACs, missing tests: none`. Then grep `src/` and `tests/` for `skip`, `xfail`,
+- [ ] T062 Check traceability with the script in quickstart.md (*Traceability check*). Expected
+  output: `59 ACs, missing tests: none`. Then grep `src/` and `tests/` for `skip`, `xfail`,
   `noqa`, `nosec`, `random`, `uuid`, `secrets` and `tempfile`; there must be no hits.
-  - **Covers**: AC-01–AC-58, FR-016, FR-017 (Constitution III, IV).
-- [ ] T059 Run the smoke scenarios from quickstart.md by hand in a scratch directory and confirm each
+  - **Covers**: AC-01–AC-59, FR-016, FR-017 (Constitution III, IV).
+- [ ] T063 Run the smoke scenarios from quickstart.md by hand in a scratch directory and confirm each
   commented output.
   - **Covers**: AC-01, AC-02, AC-12, AC-15, AC-18, AC-24, AC-28, AC-42, AC-49, AC-52.
-- [ ] T060 Final gate run, on a Python 3.11 interpreter if one is available (research R10):
-  - `python .harness/run_harness.py` must exit 0 with all four gates PASS.
+- [ ] T064 Final gate run on a **Python 3.11** interpreter (required; research R10):
+  - `python .harness/run_harness.py --final` must exit 0 with all gates PASS, including the
+    Python-version check.
   - Commit the resulting `evidence/harness-results/<timestamp>/` directory.
   - Report ruff errors, bandit MEDIUM/HIGH count, the pytest pass count and the coverage %
     (Constitution workflow step 5).
-  - **Covers**: SC-001, SC-004, SC-005, SC-006, all AC-01–AC-58.
+  - **Covers**: SC-001, SC-004, SC-005, SC-006, all AC-01–AC-59.
 
 ---
 
@@ -686,8 +766,8 @@ and the resulting `todo list` (AC-24–AC-32).
 ### Phase dependencies
 
 - **Phase 1 Setup**: none. T004 comes before T005 (test-first); T007 needs T005.
-- **Phase 2 Foundational**: needs Phase 1. T010/T011 → T012 → T013 → T014 → T015. T008 and T009
-  can be written in parallel with T010/T011.
+- **Phase 2 Foundational**: needs Phase 1. T011/T012 → T013 → T014 → T015 → T016 → T017.
+  T008, T009 and T010 (tests) can be written in parallel with T011/T012.
 - **Phases 3–8 (stories)**: all need Phase 2.
 - **Phase 9 Polish**: needs every story phase.
 
@@ -696,13 +776,14 @@ and the resulting `todo list` (AC-24–AC-32).
 | Story | Depends on | Why |
 |-------|-----------|-----|
 | US1 (P1) | Foundational | — |
-| US2 (P1) | US1 | Its ACs use `add`/`list`; T028 reuses the US1 validators |
+| US2 (P1) | US1 | Its ACs use `add`/`list`; T032 reuses the US1 validators |
 | US3 (P2) | Foundational (+ US1 `list` for AC-24) | Seeds with `write_store`; AC-24 runs `todo list` |
-| US4 (P3) | US3 | Reuses `parse_task_id`/`find_task` from T036/T037 |
-| US5 (P3) | US1, US3 | Extends `list_tasks`; uses `validate_status` from T036 |
+| US4 (P3) | Foundational (+ US1 `list` for verification) | `parse_task_id`/`find_task` come from Phase 2 (T014); its ACs check results with `todo list` |
+| US5 (P3) | US1 | Extends `list_tasks` from T024; `validate_status` comes from Phase 2 (T014) |
 | US6 (P3) | Foundational | Parser only |
 
-Recommended order: US1 → US2 → US3 → US4 → US5 → US6. US6 may run any time after Phase 2.
+Recommended order: US1 → US2 → US3 → US4 → US5 → US6. US3, US4 and US6 do not depend on each other
+and may start any time after Phase 2 (US3/US4 need US1's `list` only to verify results).
 
 ### Within each story
 
@@ -710,12 +791,12 @@ Tests ([P], separate files) → confirm red → models → service → CLI handl
 
 ### Same-file sequencing (not parallel)
 
-- `src/smart_todo/cli.py`: T013 → T022 → T031 → T038 → T044 → T049 → T054.
-- `src/smart_todo/models.py`: T011 → T020 → T036.
-- `src/smart_todo/service.py`: T021 → T037 → T043 → T048.
-- `src/smart_todo/store.py`: T012 → T028 → T029 → T030.
-- `tests/unit/test_models.py`: T017 → T034. `tests/unit/test_service.py`: T018 → T041.
-- `tests/acceptance/test_subprocess.py`: T026 → T052.
+- `src/smart_todo/cli.py`: T015 → T025 → T035 → T042 → T048 → T053 → T058.
+- `src/smart_todo/models.py`: T012 → T014 → T023 → T040.
+- `src/smart_todo/service.py`: T014 → T024 → T041 → T047 → T052.
+- `src/smart_todo/store.py`: T013 → T032 → T033 → T034.
+- `tests/unit/test_models.py`: T010 → T019 → T038. `tests/unit/test_service.py`: T010 → T020 → T045.
+- `tests/acceptance/test_subprocess.py`: T030 → T056.
 
 ---
 
@@ -726,22 +807,23 @@ Tests ([P], separate files) → confirm red → models → service → CLI handl
 T003 .gitignore  ‖  T004 harness self-tests  ‖  T006 harness README
 
 # Phase 2
-T008 conftest.py  ‖  T009 test_core.py  ‖  T010 errors.py  ‖  T011 models.py constants
+T008 conftest.py  ‖  T009 test_core.py  ‖  T010 shared-validator tests
+T011 errors.py  ‖  T012 models.py constants
 
 # US1 tests
-T016 test_us1_add_list.py  ‖  T017 test_models.py  ‖  T018 test_service.py
+T018 test_us1_add_list.py  ‖  T019 test_models.py  ‖  T020 test_service.py  ‖  T021 test_launcher.py
 
 # US2 tests
-T024 test_us2_persistence.py  ‖  T025 test_store.py  ‖  T026 test_subprocess.py
+T028 test_us2_persistence.py  ‖  T029 test_store.py  ‖  T030 test_subprocess.py
 
 # US3 tests
-T033 test_us3_status.py  ‖  T034 test_models.py additions
+T037 test_us3_status.py  ‖  T038 test_models.py additions
 
 # US4 tests
-T040 test_us4_update_delete.py  ‖  T041 test_service.py additions
+T044 test_us4_update_delete.py  ‖  T045 test_service.py additions
 
 # Polish
-T056 test_check_order.py  ‖  T057 test_performance.py
+T060 test_check_order.py  ‖  T061 test_performance.py
 ```
 
 ---
@@ -750,7 +832,7 @@ T056 test_check_order.py  ‖  T057 test_performance.py
 
 ### MVP first (US1 + US2, both P1)
 
-1. Phase 1 (harness in place) → Phase 2.
+1. Phase 1 (harness in place) → Phase 2 → first commit (T017).
 2. US1 → harness → **validate**: add and list work.
 3. US2 → harness → **validate**: data persists and is never lost. This is the MVP.
 
@@ -761,15 +843,16 @@ US3 (status) → US4 (update/delete) → US5 (filter) → US6 (usage). Each ends
 
 ### Gate discipline
 
-Coverage may fall below 90% until enough stories exist. That is expected mid-way, but nothing is
-called "complete" and no final commit is made until all four gates PASS (Constitution II, workflow
-step 6). Fix code, never tests or thresholds (Constitution III).
+Every commit leaves all gates passing (Constitution II, workflow step 6). Red test runs happen
+locally between checkpoints and are never committed on their own. A phase is committed, and its
+tasks are checked off, only once the harness exits 0 (see the commit rule above). If a gate
+fails, fix the code, never the tests or thresholds (Constitution III).
 
 ---
 
 ## Notes
 
-- Every task names its AC/FR coverage. Every AC-01…AC-58 appears in at least one test task:
-  US1 → T016, US2 → T024/T026, US3 → T033, US4 → T040, US5 → T046, US6 → T051/T052.
+- Every task names its AC/FR coverage. Every AC-01…AC-59 appears in at least one test task:
+  US1 → T018, US2 → T028/T030, US3 → T037, US4 → T044, US5 → T050, US6 → T055/T056.
 - `[P]` = different file and no dependency on an unfinished task.
-- Commit after each task or logical group, citing the task ID.
+- Commit only at phase checkpoints, after the harness exits 0, citing the task IDs (commit rule).

@@ -16,17 +16,16 @@
 
 ## Run the program
 
-From the repository root (`Part-1A/`):
+No setup is needed. The launchers at the repository root (`Part-1A/`) put `src/` on the path
+themselves (research R8):
 
 ```bash
-# POSIX shells
-export PYTHONPATH=src
-todo() { python -m smart_todo "$@"; }
-
-# PowerShell
-$env:PYTHONPATH = "src"
-function todo { python -m smart_todo @args }
+./todo add "Buy milk"             # POSIX shells (or: sh todo add "Buy milk")
+.\todo.cmd add "Buy milk"         # Windows PowerShell; in cmd.exe just: todo add "Buy milk"
 ```
+
+To use plain `todo` from any directory, add `Part-1A/` to your `PATH`. The examples below write
+plain `todo`.
 
 ## Smoke scenarios (expected output in comments)
 
@@ -47,17 +46,31 @@ echo '{not json' > todo.json ; todo list ; echo $?    # stderr: Error: data file
 todo frobnicate ; echo $?                             # stderr starts with: usage: todo   → 2
 ```
 
-All of these are covered exactly by AC-01–AC-58 in [spec.md](./spec.md). The automated suite
+All of these are covered exactly by AC-01–AC-59 in [spec.md](./spec.md). The automated suite
 below is the authoritative check.
 
 ## Quality gates (Constitution II): all must pass
 
+All gates run through the harness (research R11):
+
 ```bash
-ruff check .                                          # expect: All checks passed! (0 errors)
-bandit -r src tests                                   # expect: no Medium / High issues
-pytest --cov=smart_todo --cov-report=term-missing --cov-fail-under=90
-                                                      # expect: 100% passed, coverage ≥ 90%
+python .harness/run_harness.py            # during development (non-3.11 Python only warns)
+python .harness/run_harness.py --final    # final report: also requires Python 3.11
 ```
+
+It runs, from the repository root:
+
+| Gate | Command | PASS when |
+|------|---------|-----------|
+| ruff | `python -m ruff check .` | exit 0 (0 errors) |
+| bandit | `python -m bandit -r src tests .harness -f json` | no MEDIUM/HIGH findings, no bandit errors |
+| pytest | `python -m pytest --cov=smart_todo …` (collects `tests/` and `.harness/tests/`) | > 0 tests; 0 failures, errors or skips |
+| coverage | from `coverage.json` | ≥ 90.0% of `smart_todo` |
+
+Expected: the exit code is 0 and the last line names a new
+`evidence/harness-results/<timestamp>/` directory. That directory holds `summary.json`
+(`"overall": "PASS"`) and each tool's stdout/stderr. A non-zero exit code means at least one
+gate failed; see `summary.json`.
 
 ## Traceability check (Constitution III)
 
@@ -74,4 +87,4 @@ print(f"{len(acs)} ACs, missing tests: {missing or 'none'}")
 EOF
 ```
 
-Expected: `58 ACs, missing tests: none`.
+Expected: `59 ACs, missing tests: none`.

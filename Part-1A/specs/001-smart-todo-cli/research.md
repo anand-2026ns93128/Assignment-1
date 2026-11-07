@@ -47,8 +47,8 @@ alone. None was left as NEEDS CLARIFICATION.
   subclasses `InputError` (1) and `DataFileError` (3). Usage errors carry 2. `main()` catches
   `TodoError` and writes `message + "\n"` to stderr. Anything else is caught at the top level as
   a last resort and becomes `Error: unexpected internal error.` with exit 1. `KeyboardInterrupt`
-  becomes `Error: interrupted.` with exit 130. That exit code is defined here as allowed by
-  Constitution VI (see contracts/cli.md).
+  becomes `Error: interrupted.` with exit 130, as defined in the spec (Exit Codes, FR-015, AC-59;
+  spec change log 2026-11-07).
 - **Rationale**: The program never shows a traceback (FR-017), and every message comes from one
   table, so tests can compare exact strings.
 
@@ -111,8 +111,8 @@ alone. None was left as NEEDS CLARIFICATION.
   and no concurrent runs (spec Assumptions), the fixed name cannot collide in practice.
   `os.replace` is atomic on POSIX and Windows (NTFS) when source and target are on the same
   volume.
-- **Testing AC-21**: monkeypatch `os.replace` (or the write step) to raise `OSError` or
-  `KeyboardInterrupt` mid-save. Then assert the target bytes are unchanged, `todo list` still
+- **Testing AC-21 / AC-59**: monkeypatch `os.replace` (or the write step) to raise `OSError`
+  (AC-21, exit 3) or `KeyboardInterrupt` (AC-59, exit 130) mid-save. Then assert the target bytes are unchanged, `todo list` still
   reads it, and no `.tmp` file remains.
 
 ## R7. Byte-exact output on Windows
@@ -126,22 +126,29 @@ alone. None was left as NEEDS CLARIFICATION.
 
 ## R8. Program name and invocation
 
-- **Decision**: The package is `smart_todo` under `src/`. Run it as `python -m smart_todo …`.
-  The argparse `prog` is `todo`, so all user-visible text matches the spec. No build backend is
-  declared, so the project is not installed as a package. `pyproject.toml` holds only
-  `[project]` metadata (no dependencies) and tool configuration. The quickstart shows a one-line
-  shell alias/function for typing `todo`.
-- **Rationale**: Declaring `[build-system]` (setuptools/hatchling) to get a `todo` console script
-  would add a build dependency outside the constitution's allowed list. Pytest's
-  `pythonpath = ["src"]` makes the package importable for tests without installing it.
-- **Alternatives considered**: An installable console script. Deferred because it needs a
-  constitution amendment.
+- **Decision**: The package is `smart_todo` under `src/`. Users run it with one of two launcher files
+  at the repository root, which need no setup:
+  - `todo`, a POSIX `sh` script:
+    `PYTHONPATH="$DIR/src${PYTHONPATH:+:$PYTHONPATH}" exec python3 -m smart_todo "$@"`.
+  - `todo.cmd`, a Windows batch file: `set "PYTHONPATH=%~dp0src;%PYTHONPATH%"` then
+    `python -m smart_todo %*`.
+
+  `python -m smart_todo …` with `src` on `PYTHONPATH` is equivalent. The argparse `prog` is `todo`,
+  so all user-visible text matches the spec. No build backend is declared and nothing is installed.
+  `pyproject.toml` holds only `[project]` metadata (no dependencies) and tool configuration.
+  `.gitattributes` keeps `todo` at LF and `*.cmd` at CRLF line endings.
+- **Rationale**: SC-002 promises use "with no configuration". The launchers deliver that without the
+  `[build-system]` (setuptools/hatchling) that a console script would need, which would be a
+  dependency outside the constitution's allowed list (analysis finding I2). Pytest's
+  `pythonpath = ["src"]` makes the package importable for tests.
+- **Alternatives considered**: An installable console script (needs a constitution amendment); a
+  shell alias in the quickstart (that is configuration, so it breaks SC-002).
 
 ## R9. Testing approach (Constitution II, III)
 
 - **Decision**:
   - Acceptance tests in `tests/acceptance/`, one module per user story, with one or more
-    functions named `test_ACNN_<description>` for each AC-01…AC-58. They call
+    functions named `test_ACNN_<description>` for each AC-01…AC-59. They call
     `smart_todo.cli.main(argv)` in-process, with `monkeypatch.chdir(tmp_path)` and `capsys`, and
     compare stdout, stderr, the return code and the data-file bytes.
   - A small subprocess suite (`python -m smart_todo`) covers the real process boundary: AC-14
@@ -149,9 +156,10 @@ alone. None was left as NEEDS CLARIFICATION.
   - Unit tests in `tests/unit/` cover validators, schema checks and sort order.
 - **Rationale**: In-process tests are fast and count toward `pytest-cov` (≥ 90%). The subprocess
   tests prove the same behaviour across real program runs.
-- **Gate commands**: `ruff check .`; `bandit -r src tests` (only MEDIUM/HIGH findings count; the
-  LOW-severity B101 `assert` and B404/B603 `subprocess` findings in tests do not);
-  `pytest --cov=smart_todo --cov-fail-under=90`.
+- **Gate commands** (all run by the harness, R11): `ruff check .`; `bandit -r src tests .harness`
+  (only MEDIUM/HIGH findings count; the LOW-severity B101 `assert` and B404/B603 `subprocess`
+  findings in tests and the harness do not); `pytest --cov=smart_todo` over `tests/` and
+  `.harness/tests/`, with coverage ≥ 90%.
 
 ## R10. Runtime version
 
@@ -159,5 +167,30 @@ alone. None was left as NEEDS CLARIFICATION.
   `target-version = "py311"`, and use no 3.12+ syntax or APIs.
 - **Observation**: This machine has Python 3.13.2, and no 3.11 interpreter was found
   (`py -3.11` fails). Code written for 3.11 runs on 3.13, but the constitution names 3.11 as the
-  runtime. Gate results should be produced on a 3.11 interpreter (install via python.org or
-  `py install 3.11`). Until then, they should be reported as run on 3.13.
+  runtime. The harness records the interpreter version in `summary.json`. Ordinary runs only warn
+  about a non-3.11 interpreter, but `run_harness.py --final`, used for the final gate report,
+  fails on any interpreter other than 3.11 (analysis finding U2). Install 3.11 from python.org or
+  with `py install 3.11` before the final run.
+
+## R11. Quality-gate harness
+
+- **Decision**: One runner, `.harness/run_harness.py`, standard library only.
+  - It runs four gates with `sys.executable -m <tool>` from the repository root: ruff, bandit
+    (fails on any MEDIUM/HIGH finding or bandit error), pytest (fails on any failure, error or
+    skip, or 0 tests), and coverage (fails below 90.0% of `smart_todo`).
+  - It always runs all four gates and saves each tool's stdout/stderr, plus `bandit.json`,
+    `junit.xml`, `coverage.json` and `summary.json` (PASS/FAIL per gate), in
+    `evidence/harness-results/<UTC timestamp>/`.
+  - It exits 0 only if every gate passes, 1 if any gate fails, and 2 if the harness itself
+    crashes. `--final` adds a Python-3.11 check as a gate (R10).
+  - Self-tests live in `.harness/tests/` and are collected by the pytest gate through
+    `testpaths` (analysis finding U1).
+- **Rationale**: Constitution II demands objective gates, and workflow step 5 demands the results
+  be reported. One script makes the gates identical for every run and leaves a dated record that
+  can be committed with each checkpoint.
+- **Commit rule**: Work is committed only at phase checkpoints, after the harness exits 0, so every
+  commit leaves all gates passing (workflow step 6; analysis finding C1). The test-first "red" runs
+  are local only.
+- **Alternatives considered**: Separate shell commands per gate (no single PASS/FAIL, no saved
+  evidence); a Makefile or `tox`/`nox` (`make` is not on Windows by default; `tox`/`nox` are
+  dependencies the constitution does not allow).

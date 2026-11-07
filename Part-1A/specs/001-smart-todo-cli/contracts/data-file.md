@@ -57,7 +57,8 @@ save.
 | File missing | Empty store (`next_id` 1). Read-only commands create nothing (AC-17). |
 | File valid | Loaded. Mutating commands rewrite it atomically. |
 | File invalid / unreadable | Exit 3, file unchanged (AC-18–AC-20). |
-| Save fails or is interrupted | Target unchanged; temp file `PATH.tmp` removed if possible; exit 3 with `Error: could not save data file 'PATH'; previous data was kept.` (AC-21) |
+| Save fails | Target unchanged; temp file `PATH.tmp` removed if possible; exit 3 with `Error: could not save data file 'PATH'; previous data was kept.` (AC-21) |
+| Save interrupted (Ctrl+C) | Target unchanged; temp file `PATH.tmp` removed if possible; exit 130 with `Error: interrupted.` (AC-59) |
 
 ## Atomic write procedure
 
