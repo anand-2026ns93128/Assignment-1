@@ -5,7 +5,7 @@
   "description": "One evaluation run (spec FR-040). Written to evidence/eval-runs/<run_id>/eval-results.json; the final run is copied to evidence/eval-results.json. Must contain no secrets.",
   "type": "object",
   "required": ["run_id", "timestamp_utc", "mode", "model", "schema_version", "prompt_version",
-               "dataset_sha256", "pricing", "threshold", "cases", "totals", "cost", "aborted",
+               "dataset_sha256", "pricing", "threshold", "cases", "totals", "cost", "latency", "aborted",
                "verdict", "verdict_reasons"],
   "properties": {
     "run_id": {"type": "string"},
@@ -69,8 +69,21 @@
           "attempts": {"type": "integer"},
           "input_tokens": {"type": "integer"},
           "output_tokens": {"type": "integer"},
-          "cost_usd": {"type": "number"}
+          "cost_usd": {"type": "number"},
+          "latency_ms": {"type": ["number", "null"], "description": "Elapsed time of the agent call in the live run; copied in replay (FR-040, AC-61)"},
+          "measured": {"type": "boolean", "description": "True only for non-infra_error cases that made a model call"}
         }
+      }
+    },
+    "latency": {
+      "type": "object",
+      "description": "SC-006 summary; informational, never used by the verdict",
+      "required": ["measured_cases", "p95_ms", "within_10s_rate", "sc006_met"],
+      "properties": {
+        "measured_cases": {"type": "integer", "minimum": 0},
+        "p95_ms": {"type": ["number", "null"]},
+        "within_10s_rate": {"type": ["number", "null"]},
+        "sc006_met": {"type": ["boolean", "null"]}
       }
     },
     "totals": {"type": "object"},

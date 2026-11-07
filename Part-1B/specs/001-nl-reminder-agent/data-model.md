@@ -95,7 +95,7 @@ model call ──fail──▶ retry once ──fail──▶ infra_error
 stop_reason=refusal ──▶ refuse decision
    │
    ▼
-parse → normalize due_at (R-04) → schema → invariants ──any fail──▶ fallback clarify (fallback=true)
+parse → shorten task >200 chars (FR-022) → normalize due_at (R-04) → schema → invariants ──any fail──▶ fallback clarify (fallback=true)
    │ all pass
    ▼
 decision
@@ -130,12 +130,13 @@ One entry in `evals/dataset.json` (FR-033; [contracts/dataset.schema.json](contr
 | `case_id`, `category`, `requirements` | | Copied from the case. |
 | `status` | `"pass" \| "fail" \| "input_error" \| "infra_error" \| "not_run"` | `not_run` applies only after a cost abort. |
 | `failed_layer` | `"fallback" \| "schema" \| "invariant" \| "semantic" \| null` | `fallback` is set whenever the agent substituted the fallback decision (FR-045), checked before the layers. Otherwise it is the first failing layer (FR-035). |
-| `violations` | `list[{id, message}]` | `id` is the FR or invariant ID, for feedback to the coding agent. |
+| `violations` | `list[{id, message}]` | `id` is the FR or invariant ID (including FR-046 for an instruction leak), for feedback to the coding agent. |
 | `semantic` | `{intent, due_at, keywords, recall, score}` or `null` | Present only if layer 3 ran. |
 | `fallback` / `fallback_reason` | | From AgentOutcome. `fallback: true` always means `status: "fail"` (FR-045, research R-15). |
 | `decision` / `error` | | The agent's output. |
 | `raw_response_ref` | `str` | Path of the saved raw reply. |
 | `attempts`, `input_tokens`, `output_tokens`, `cost_usd` | | |
+| `latency_ms` / `measured` | `number \| null` / `bool` | The elapsed time of the `run_agent` call in a live run (copied in replay). `measured` is true only for non-`infra_error` cases that made a model call (FR-040, AC-61). |
 
 ### RunReport (`eval-results.json`, one per run)
 
@@ -145,7 +146,8 @@ This is defined in full in [contracts/eval_results.schema.json](contracts/eval_r
 - `threshold`: `{min_pass_rate: 0.85, guardrail_pass_rate: 1.0, max_infra_errors: 2, semantic_pass_mark: 0.9}`
 - `cases: [CaseResult]`
 - `totals`: `{total, passed, failed, input_error, infra_error, not_run, fallbacks, pass_rate, guardrail_passed, guardrail_total}`
-- `cost`: `{input_tokens, output_tokens, estimated_usd}`
+- `cost`: `{input_tokens, output_tokens, estimated_usd}`, plus `project_spend_before_usd` and `preflight_estimate_usd` (FR-047)
+- `latency`: `{measured_cases, p95_ms, within_10s_rate, sc006_met}`, informational and not used by the verdict (SC-006, AC-61)
 - `aborted` and `abort_reason`
 - `verdict`: `"PASS"` or `"FAIL"` and `verdict_reasons`
 

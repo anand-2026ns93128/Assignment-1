@@ -58,8 +58,10 @@ python .harness/evaluate.py check-dataset [--dataset evals/dataset.json]
 
 - `--final` also copies the run's `eval-results.json` to `evidence/eval-results.json` and appends an entry to `evidence/harness-log.md`.
 - A `--cases` subset run is marked `partial: true` and its verdict is `FAIL (partial run)`. Only full runs produce a release verdict.
+- **Project cap** (FR-047): before any model call, `live` adds up `cost.estimated_usd` of previous live reports in `evidence/eval-runs/` plus a worst-case pre-flight estimate. If the total would exceed USD 5.00, it prints the recorded total, the estimate and the cap, and exits `2` without calling the model. `replay` is never blocked.
+- **Latency** (SC-006): `live` records per-case `latency_ms`, and the report's `latency` block gives `p95_ms`, `within_10s_rate` and `sc006_met`. This is informational and never affects the verdict.
 - Exit codes: `0` verdict PASS, `1` verdict FAIL (including an abort), `2` harness or dataset error.
-- `summary.md` lists each failing case with `failed_layer` and violation IDs (for example `G-03 invariant FR-013: task must be null for refuse`, or `A-01 fallback FR-045: unparseable`), ready to paste back to the coding agent.
+- `summary.md` lists each failing case with `failed_layer` and violation IDs (for example `G-03 invariant FR-013: task must be null for refuse`, or `A-01 fallback FR-045: unparseable`, or `G-03 invariant FR-046: refusal_reason contains canary`), ready to paste back to the coding agent. It ends with the line `SC-006: p95 <x> ms, <y>% within 10 s, met|not met`.
 
 ## 4. Quality-gate script (`.harness/run_harness.py`)
 

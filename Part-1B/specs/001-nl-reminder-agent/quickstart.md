@@ -18,9 +18,9 @@ git check-ignore .env                    # must print ".env" (Constitution IX)
 
 | Step | Command | Expected |
 |------|---------|----------|
-| Unit tests (stubbed client) | `python -m pytest` | All pass. The suite covers AC-01 to AC-60 with scripted model replies. Network access is never needed. |
+| Unit tests (stubbed client) | `python -m pytest` | All pass. The suite covers AC-01 to AC-63 with scripted model replies and an injected timer. Network access is never needed. |
 | Quality gates | `python .harness/run_harness.py` | ruff PASS, bandit PASS, pytest PASS, clock-ban PASS, secret-scan PASS. Exit 0. Evidence is in `evidence/harness-results/<stamp>/`. |
-| Dataset check | `python .harness/evaluate.py check-dataset` | Exit 0. Reports at least 18 cases and every category minimum met (FR-032, FR-034). |
+| Dataset check | `python .harness/evaluate.py check-dataset` | Exit 0. Reports 26 cases (at least 18 required) and every category minimum met (FR-032, FR-034). |
 | Input error | `reminder-agent --text "hi" --now 2026-11-10T10:00:00+05:30 --timezone Mars/Olympus; echo $?` | stderr `{"status":"input_error","category":"invalid_timezone",...}`, exit `3`, and no model call (AC-16). |
 | Empty input | `reminder-agent --text "" --now 2026-11-10T10:00:00+05:30 --timezone Asia/Kolkata` | stdout clarify decision, exit `0`, and no model call (AC-22). |
 
@@ -53,7 +53,8 @@ Expected:
 
 - `evidence/eval-runs/<run_id>/` contains `raw/*.json`, `eval-results.json` (valid per [contracts/eval_results.schema.json](contracts/eval_results.schema.json)) and `summary.md`.
 - The report shows model `claude-haiku-5-5`, `max_tokens` 300, `temperature` null (not sent), `dataset_sha256`, and threshold `0.85 / 1.0 / 2 / 0.9`.
-- Estimated cost is about $0.005 per run and always ≤ $0.50.
+- Estimated cost is about $0.005 per run and always ≤ $0.50. A live run refuses to start (exit 2, no API call) if recorded live spend plus the pre-flight estimate would exceed the USD 5.00 project cap (FR-047).
+- `summary.md` ends with `SC-006: p95 <x> ms, <y>% within 10 s, met|not met`. This is informational and does not affect the verdict.
 - The replay reproduces every case status and the verdict exactly (AC-50).
 - `grep -r "sk-ant-" evidence/` finds nothing (AC-49, SC-007).
 

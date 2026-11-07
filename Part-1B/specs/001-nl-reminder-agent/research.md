@@ -74,6 +74,7 @@ Re-check them against the live docs when the SDK is installed (see R-14).
   - **Post-model**: parse → full schema validation → invariant check (FR-008 to FR-013, including `target_id` existence and `due_at >= now` after normalization). Any failure produces the fixed fallback clarify plus a `fallback` record (FR-030).
   - **Safety refusals**: `stop_reason == "refusal"` maps to a schema-valid `refuse` decision with reason "Request declined by safety policy." Haiku 5.5 has no server-side fallback.
   - **Truncation**: `stop_reason == "max_tokens"` is invalid output and produces the fallback.
+  - **Over-long task** (FR-022, AC-13): a parsed `task` over 200 characters is shortened deterministically (`parsing.shorten_task`: last whitespace at or below 200 characters, trailing punctuation stripped, hard cut if there is no whitespace) **before** schema validation, so it does not become a fallback. Rejected alternative: treating it as invalid output, which would contradict FR-022 and fail AC-13 (analysis finding C1).
 - **Rationale**: Cheap, deterministic checks handle the cases that need no language understanding. Regex blocking of "ignore previous instructions" was rejected because it would break AC-28, where a valid reminder carries an injection.
 - **Alternatives**: A second "moderation" model call was rejected on cost and constitution grounds (Principle VI does not apply to the agent, but cost does).
 
@@ -121,13 +122,13 @@ Re-check them against the live docs when the SDK is installed (see R-14).
   - After each live case, `estimated_cost += in_tokens*rate_in + out_tokens*rate_out`, using the long-context rates if the prompt exceeded 100K tokens.
   - **Before starting the next case**, if `estimated_cost > run_abort_usd`, stop. The run is marked `aborted`, unrun cases are listed, and the verdict is FAIL (FR-042, AC-51).
   - Retries count toward cost when the failed attempt reported usage.
-- **Alternatives**: A pre-flight worst-case estimate (`cases × (prompt + 300) tokens`) is also printed before a live run, for information only.
+- **Project cap (FR-047, AC-63)**: before a live run, `.harness/budget.py` sums `cost.estimated_usd` of every previous live report in `evidence/eval-runs/` and adds a worst-case pre-flight estimate: per case, 2 attempts × (`ceil(prompt characters / 3)` input tokens + `max_tokens` output tokens) at the configured rates. If the total would exceed `project_cap_usd` (5.00), the run is refused with exit 2 and no model call. Replay is never blocked. Rejected alternative: a manual spend tracker only, which is not enforced (analysis finding G3).
 
 ## R-11 Harness layering and failure attribution
 
 - **Decision**: These are separate modules under `.harness/`:
   - `layer1_schema.py`: JSON Schema validation plus ISO-8601 parse of `due_at`. It returns a list of violations, each tagged `FR-005`/`FR-006`.
-  - `layer2_invariants.py`: an independent re-implementation of FR-008 to FR-013, one function per invariant, each returning its FR ID.
+  - `layer2_invariants.py`: an independent re-implementation of FR-008 to FR-013, one function per invariant, each returning its FR ID, plus the FR-046 instruction-leak property. The harness reads `prompts/system_prompt.v1.txt` and fails a decision whose string fields contain the canary token `[[canary:…]]` or any prompt line of 30 or more characters verbatim, case-insensitively. The 30-character floor avoids false positives on short common phrases (analysis finding G2).
   - `layer3_semantic.py`: the FR-036 formula with whole-word keyword matching (R-12).
   - `aggregate.py`: the fallback check (FR-045, run first) and the FR-037/038/039/044 verdict.
 
@@ -157,6 +158,18 @@ Re-check them against the live docs when the SDK is installed (see R-14).
 - `output_config={"format": {...}, "effort": "low"}` and `thinking={"type":"disabled"}` are accepted by the installed `anthropic` version with `claude-haiku-5-5`. If `format` is missing, use the strict-tool fallback from R-02.
 - The live pricing page still shows $0.10 / $0.50 per MTok for Claude Haiku 5.5, and `config/settings.toml` is updated if it differs.
 - The installed SDK's error class names match R-06.
+
+## R-16 Measuring latency for SC-006 (added 2026-11-07, analysis finding G1)
+
+- **Decision**: `evaluate.run_live` wraps each `run_agent` call with an injectable `timer` (default `time.perf_counter`) and records `latency_ms` per case. `aggregate.latency_summary` reports:
+  - `measured_cases`: non-`infra_error` cases that made a model call
+  - `p95_ms`: nearest-rank method
+  - `within_10s_rate`
+  - `sc006_met`: true when `within_10s_rate >= 0.95`
+
+  The summary is printed in `summary.md` and **excluded from the verdict** (FR-040, AC-61). Replay copies the source latencies, because replay doesn't call the model.
+- **Rationale**: SC-006 had no measurement. `perf_counter` is a monotonic duration timer, not a wall clock or timezone read. It lives only in the runner, so Constitution III (no clock in agent or scoring logic) still holds, and tests inject a fake timer for determinism.
+- **Alternatives**: Timing inside the agent was rejected because it would put a clock in agent code. Adding latency to the verdict was rejected because the release threshold is frozen (FR-043) and latency depends on the network.
 
 ## R-15 Scoring of fallback decisions (resolved by the owner, 2026-11-07)
 
