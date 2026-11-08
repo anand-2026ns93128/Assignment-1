@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "reminder-agent"
+version = "0.1.0"
+description = "Natural-language reminder agent (library + CLI) with a deterministic evaluation harness."
+requires-python = ">=3.11"
+dependencies = ["anthropic", "jsonschema", "python-dotenv", "tzdata"]
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-cov", "ruff", "bandit"]
+
+[project.scripts]
+reminder-agent = "reminder_agent.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+extend-exclude = ["evidence", "specs", ".specify", ".claude"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src", ".harness"]
+testpaths = ["tests"]
+addopts = "--strict-markers"
+
+[tool.coverage.run]
+source = ["reminder_agent"]
+
+[tool.coverage.report]
+show_missing = true

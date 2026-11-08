@@ -1,0 +1,71 @@
+{
+  "coverage": {
+    "percent": 92.48,
+    "status": "INFO"
+  },
+  "final": true,
+  "gates": {
+    "bandit": {
+      "command": [
+        "C:\\Users\\PMB\\Assignment-1\\Part-1B\\.venv\\Scripts\\python.exe",
+        "-m",
+        "bandit",
+        "-r",
+        "src",
+        "tests",
+        ".harness",
+        "-f",
+        "json"
+      ],
+      "exit_code": 1,
+      "low_count": 338,
+      "medium_high_count": 0,
+      "status": "PASS"
+    },
+    "clock_ban": {
+      "status": "PASS",
+      "violations": []
+    },
+    "pytest": {
+      "command": [
+        "C:\\Users\\PMB\\Assignment-1\\Part-1B\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "--cov=reminder_agent",
+        "--cov-report=term-missing",
+        "--cov-report=json:C:\\Users\\PMB\\Assignment-1\\Part-1B\\evidence\\harness-results\\20261108T094402Z\\coverage.json",
+        "--junitxml=C:\\Users\\PMB\\Assignment-1\\Part-1B\\evidence\\harness-results\\20261108T094402Z\\junit.xml"
+      ],
+      "errors": 0,
+      "exit_code": 0,
+      "failures": 0,
+      "skipped": 0,
+      "status": "PASS",
+      "tests": 233
+    },
+    "python": {
+      "required": "3.11",
+      "status": "PASS",
+      "version": "3.11.9"
+    },
+    "ruff": {
+      "command": [
+        "C:\\Users\\PMB\\Assignment-1\\Part-1B\\.venv\\Scripts\\python.exe",
+        "-m",
+        "ruff",
+        "check",
+        "."
+      ],
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    "secret_scan": {
+      "files": [],
+      "status": "PASS"
+    }
+  },
+  "overall": "PASS",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "python_version": "3.11.9",
+  "timestamp": "20261108T094402Z"
+}

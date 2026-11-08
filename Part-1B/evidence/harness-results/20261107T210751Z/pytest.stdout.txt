@@ -1,0 +1,44 @@
+============================= test session starts =============================
+platform win32 -- Python 3.11.9, pytest-9.2.0, pluggy-1.7.0
+rootdir: C:\Users\PMB\Assignment-1\Part-1B
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.16.0, cov-7.1.0
+collected 103 items
+
+tests\agent\test_agent_create.py ........                                [  7%]
+tests\agent\test_cli.py .....                                            [ 12%]
+tests\agent\test_client_request.py ...                                   [ 15%]
+tests\agent\test_config.py .......                                       [ 22%]
+tests\agent\test_determinism.py .                                        [ 23%]
+tests\agent\test_inputs.py .......                                       [ 30%]
+tests\agent\test_invariants_fallback.py ................                 [ 45%]
+tests\agent\test_models.py ..........                                    [ 55%]
+tests\agent\test_parsing.py ...............                              [ 69%]
+tests\agent\test_prompt.py ...                                           [ 72%]
+tests\agent\test_timeutil.py ..........                                  [ 82%]
+tests\harness\test_dataset.py .........                                  [ 91%]
+tests\harness\test_run_harness.py .........                              [100%]
+
+- generated xml file: C:\Users\PMB\Assignment-1\Part-1B\evidence\harness-results\20261107T210751Z\junit.xml -
+=============================== tests coverage ================================
+_______________ coverage: platform win32, python 3.11.9-final-0 _______________
+
+Name                               Stmts   Miss  Cover   Missing
+----------------------------------------------------------------
+src\reminder_agent\__init__.py         3      0   100%
+src\reminder_agent\__main__.py         3      3     0%   3-7
+src\reminder_agent\agent.py           50      5    90%   41-42, 73, 77-78
+src\reminder_agent\cli.py             63     14    78%   50-51, 56-58, 69-73, 78-80, 91
+src\reminder_agent\client.py          32      8    75%   20-23, 33-37
+src\reminder_agent\config.py          85      9    89%   41, 68, 92-93, 99-100, 132-135
+src\reminder_agent\guardrails.py      24      2    92%   17-18
+src\reminder_agent\inputs.py          49      4    92%   24, 31, 41, 60
+src\reminder_agent\models.py          85      3    96%   112, 144, 154
+src\reminder_agent\parsing.py         65      1    98%   67
+src\reminder_agent\prompt.py          15      0   100%
+src\reminder_agent\timeutil.py        35      0   100%
+----------------------------------------------------------------
+TOTAL                                509     49    90%
+Coverage JSON written to file C:\Users\PMB\Assignment-1\Part-1B\evidence\harness-results\20261107T210751Z\coverage.json
+============================ 103 passed in 43.83s =============================
