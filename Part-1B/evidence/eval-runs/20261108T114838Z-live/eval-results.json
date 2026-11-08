@@ -1,0 +1,833 @@
+{
+  "run_id": "20261108T114838Z-live",
+  "timestamp_utc": "20261108T114844Z",
+  "mode": "live",
+  "source_run_id": null,
+  "model": {
+    "name": "claude-haiku-5-5",
+    "max_tokens": 300,
+    "temperature": null,
+    "effort": "low",
+    "thinking": "disabled",
+    "timeout_seconds": 30
+  },
+  "schema_version": "1.0.0",
+  "prompt_version": "v1",
+  "dataset_sha256": "e7512a65595ced4ba6ef3be4b09b112fefaff8ae4c385f967ab6bed38613c4ef",
+  "pricing": {
+    "input_per_mtok": 0.1,
+    "output_per_mtok": 0.5,
+    "long_context_threshold_tokens": 100000,
+    "long_input_per_mtok": 0.5,
+    "long_output_per_mtok": 2.5
+  },
+  "threshold": {
+    "min_pass_rate": 0.85,
+    "guardrail_pass_rate": 1.0,
+    "max_infra_errors": 2,
+    "semantic_pass_mark": 0.9
+  },
+  "cases": [
+    {
+      "case_id": "N-01",
+      "category": "normal",
+      "requirements": [
+        "FR-008",
+        "FR-014",
+        "FR-022"
+      ],
+      "status": "infra_error",
+      "failed_layer": null,
+      "violations": [],
+      "semantic": null,
+      "fallback": false,
+      "fallback_reason": null,
+      "decision": null,
+      "error": {
+        "status": "infra_error",
+        "category": "auth",
+        "field": null,
+        "message": "authentication failed: AuthenticationError (HTTP 401)",
+        "attempts": 1
+      },
+      "raw_response_ref": "raw/N-01.json",
+      "attempts": 1,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_ms": 534,
+      "measured": false
+    },
+    {
+      "case_id": "N-02",
+      "category": "normal",
+      "requirements": [
+        "FR-014",
+        "FR-022"
+      ],
+      "status": "infra_error",
+      "failed_layer": null,
+      "violations": [],
+      "semantic": null,
+      "fallback": false,
+      "fallback_reason": null,
+      "decision": null,
+      "error": {
+        "status": "infra_error",
+        "category": "auth",
+        "field": null,
+        "message": "authentication failed: AuthenticationError (HTTP 401)",
+        "attempts": 1
+      },
+      "raw_response_ref": "raw/N-02.json",
+      "attempts": 1,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_ms": 266,
+      "measured": false
+    },
+    {
+      "case_id": "N-03",
+      "category": "normal",
+      "requirements": [
+        "FR-015",
+        "FR-022"
+      ],
+      "status": "infra_error",
+      "failed_layer": null,
+      "violations": [],
+      "semantic": null,
+      "fallback": false,
+      "fallback_reason": null,
+      "decision": null,
+      "error": {
+        "status": "infra_error",
+        "category": "auth",
+        "field": null,
+        "message": "authentication failed: AuthenticationError (HTTP 401)",
+        "attempts": 1
+      },
+      "raw_response_ref": "raw/N-03.json",
+      "attempts": 1,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_ms": 201,
+      "measured": false
+    },
+    {
+      "case_id": "N-04",
+      "category": "normal",
+      "requirements": [
+        "FR-016",
+        "FR-022"
+      ],
+      "status": "infra_error",
+      "failed_layer": null,
+      "violations": [],
+      "semantic": null,
+      "fallback": false,
+      "fallback_reason": null,
+      "decision": null,
+      "error": {
+        "status": "infra_error",
+        "category": "auth",
+        "field": null,
+        "message": "authentication failed: AuthenticationError (HTTP 401)",
+        "attempts": 1
+      },
+      "raw_response_ref": "raw/N-04.json",
+      "attempts": 1,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_ms": 203,
+      "measured": false
+    },
+    {
+      "case_id": "N-05",
+      "category": "normal",
+      "requirements": [
+        "FR-017",
+        "FR-009"
+      ],
+      "status": "infra_error",
+      "failed_layer": null,
+      "violations": [],
+      "semantic": null,
+      "fallback": false,
+      "fallback_reason": null,
+      "decision": null,
+      "error": {
+        "status": "infra_error",
+        "category": "auth",
+        "field": null,
+        "message": "authentication failed: AuthenticationError (HTTP 401)",
+        "attempts": 1
+      },
+      "raw_response_ref": "raw/N-05.json",
+      "attempts": 1,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_ms": 201,
+      "measured": false
+    },
+    {
+      "case_id": "B-01",
+      "category": "boundary",
+      "requirements": [
+        "FR-014",
+        "FR-018"
+      ],
+      "status": "infra_error",
+      "failed_layer": null,
+      "violations": [],
+      "semantic": null,
+      "fallback": false,
+      "fallback_reason": null,
+      "decision": null,
+      "error": {
+        "status": "infra_error",
+        "category": "auth",
+        "field": null,
+        "message": "authentication failed: AuthenticationError (HTTP 401)",
+        "attempts": 1
+      },
+      "raw_response_ref": "raw/B-01.json",
+      "attempts": 1,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_ms": 305,
+      "measured": false
+    },
+    {
+      "case_id": "B-02",
+      "category": "boundary",
+      "requirements": [
+        "FR-014"
+      ],
+      "status": "infra_error",
+      "failed_layer": null,
+      "violations": [],
+      "semantic": null,
+      "fallback": false,
+      "fallback_reason": null,
+      "decision": null,
+      "error": {
+        "status": "infra_error",
+        "category": "auth",
+        "field": null,
+        "message": "authentication failed: AuthenticationError (HTTP 401)",
+        "attempts": 1
+      },
+      "raw_response_ref": "raw/B-02.json",
+      "attempts": 1,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_ms": 201,
+      "measured": false
+    },
+    {
+      "case_id": "B-03",
+      "category": "boundary",
+      "requirements": [
+        "FR-018"
+      ],
+      "status": "infra_error",
+      "failed_layer": null,
+      "violations": [],
+      "semantic": null,
+      "fallback": false,
+      "fallback_reason": null,
+      "decision": null,
+      "error": {
+        "status": "infra_error",
+        "category": "auth",
+        "field": null,
+        "message": "authentication failed: AuthenticationError (HTTP 401)",
+        "attempts": 1
+      },
+      "raw_response_ref": "raw/B-03.json",
+      "attempts": 1,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_ms": 202,
+      "measured": false
+    },
+    {
+      "case_id": "B-04",
+      "category": "boundary",
+      "requirements": [
+        "FR-018"
+      ],
+      "status": "infra_error",
+      "failed_layer": null,
+      "violations": [],
+      "semantic": null,
+      "fallback": false,
+      "fallback_reason": null,
+      "decision": null,
+      "error": {
+        "status": "infra_error",
+        "category": "auth",
+        "field": null,
+        "message": "authentication failed: AuthenticationError (HTTP 401)",
+        "attempts": 1
+      },
+      "raw_response_ref": "raw/B-04.json",
+      "attempts": 1,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_ms": 304,
+      "measured": false
+    },
+    {
+      "case_id": "A-01",
+      "category": "ambiguous",
+      "requirements": [
+        "FR-021",
+        "FR-012"
+      ],
+      "status": "infra_error",
+      "failed_layer": null,
+      "violations": [],
+      "semantic": null,
+      "fallback": false,
+      "fallback_reason": null,
+      "decision": null,
+      "error": {
+        "status": "infra_error",
+        "category": "auth",
+        "field": null,
+        "message": "authentication failed: AuthenticationError (HTTP 401)",
+        "attempts": 1
+      },
+      "raw_response_ref": "raw/A-01.json",
+      "attempts": 1,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_ms": 305,
+      "measured": false
+    },
+    {
+      "case_id": "A-02",
+      "category": "ambiguous",
+      "requirements": [
+        "FR-021",
+        "FR-009"
+      ],
+      "status": "infra_error",
+      "failed_layer": null,
+      "violations": [],
+      "semantic": null,
+      "fallback": false,
+      "fallback_reason": null,
+      "decision": null,
+      "error": {
+        "status": "infra_error",
+        "category": "auth",
+        "field": null,
+        "message": "authentication failed: AuthenticationError (HTTP 401)",
+        "attempts": 1
+      },
+      "raw_response_ref": "raw/A-02.json",
+      "attempts": 1,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_ms": 201,
+      "measured": false
+    },
+    {
+      "case_id": "A-03",
+      "category": "ambiguous",
+      "requirements": [
+        "FR-016",
+        "FR-012"
+      ],
+      "status": "infra_error",
+      "failed_layer": null,
+      "violations": [],
+      "semantic": null,
+      "fallback": false,
+      "fallback_reason": null,
+      "decision": null,
+      "error": {
+        "status": "infra_error",
+        "category": "auth",
+        "field": null,
+        "message": "authentication failed: AuthenticationError (HTTP 401)",
+        "attempts": 1
+      },
+      "raw_response_ref": "raw/A-03.json",
+      "attempts": 1,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_ms": 305,
+      "measured": false
+    },
+    {
+      "case_id": "A-04",
+      "category": "ambiguous",
+      "requirements": [
+        "FR-021",
+        "FR-012"
+      ],
+      "status": "infra_error",
+      "failed_layer": null,
+      "violations": [],
+      "semantic": null,
+      "fallback": false,
+      "fallback_reason": null,
+      "decision": null,
+      "error": {
+        "status": "infra_error",
+        "category": "auth",
+        "field": null,
+        "message": "authentication failed: AuthenticationError (HTTP 401)",
+        "attempts": 1
+      },
+      "raw_response_ref": "raw/A-04.json",
+      "attempts": 1,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_ms": 510,
+      "measured": false
+    },
+    {
+      "case_id": "M-01",
+      "category": "missing_task",
+      "requirements": [
+        "FR-020",
+        "FR-012"
+      ],
+      "status": "infra_error",
+      "failed_layer": null,
+      "violations": [],
+      "semantic": null,
+      "fallback": false,
+      "fallback_reason": null,
+      "decision": null,
+      "error": {
+        "status": "infra_error",
+        "category": "auth",
+        "field": null,
+        "message": "authentication failed: AuthenticationError (HTTP 401)",
+        "attempts": 1
+      },
+      "raw_response_ref": "raw/M-01.json",
+      "attempts": 1,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_ms": 173,
+      "measured": false
+    },
+    {
+      "case_id": "T-01",
+      "category": "missing_time",
+      "requirements": [
+        "FR-019",
+        "FR-012"
+      ],
+      "status": "infra_error",
+      "failed_layer": null,
+      "violations": [],
+      "semantic": null,
+      "fallback": false,
+      "fallback_reason": null,
+      "decision": null,
+      "error": {
+        "status": "infra_error",
+        "category": "auth",
+        "field": null,
+        "message": "authentication failed: AuthenticationError (HTTP 401)",
+        "attempts": 1
+      },
+      "raw_response_ref": "raw/T-01.json",
+      "attempts": 1,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_ms": 229,
+      "measured": false
+    },
+    {
+      "case_id": "T-02",
+      "category": "missing_time",
+      "requirements": [
+        "FR-019"
+      ],
+      "status": "infra_error",
+      "failed_layer": null,
+      "violations": [],
+      "semantic": null,
+      "fallback": false,
+      "fallback_reason": null,
+      "decision": null,
+      "error": {
+        "status": "infra_error",
+        "category": "auth",
+        "field": null,
+        "message": "authentication failed: AuthenticationError (HTTP 401)",
+        "attempts": 1
+      },
+      "raw_response_ref": "raw/T-02.json",
+      "attempts": 1,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_ms": 203,
+      "measured": false
+    },
+    {
+      "case_id": "X-01",
+      "category": "malformed",
+      "requirements": [
+        "FR-026"
+      ],
+      "status": "pass",
+      "failed_layer": null,
+      "violations": [],
+      "semantic": {
+        "intent": 0.4,
+        "due_at": 0.4,
+        "keywords": 0.2,
+        "recall": 1.0,
+        "score": 1.0
+      },
+      "fallback": false,
+      "fallback_reason": null,
+      "decision": {
+        "intent": "clarify",
+        "task": null,
+        "due_at": null,
+        "target_id": null,
+        "snooze_minutes": null,
+        "clarification_question": "What would you like me to remind you about, and when?",
+        "refusal_reason": null
+      },
+      "error": null,
+      "raw_response_ref": "raw/X-01.json",
+      "attempts": 0,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_ms": 0,
+      "measured": false
+    },
+    {
+      "case_id": "X-02",
+      "category": "malformed",
+      "requirements": [
+        "FR-026"
+      ],
+      "status": "infra_error",
+      "failed_layer": null,
+      "violations": [],
+      "semantic": null,
+      "fallback": false,
+      "fallback_reason": null,
+      "decision": null,
+      "error": {
+        "status": "infra_error",
+        "category": "auth",
+        "field": null,
+        "message": "authentication failed: AuthenticationError (HTTP 401)",
+        "attempts": 1
+      },
+      "raw_response_ref": "raw/X-02.json",
+      "attempts": 1,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_ms": 194,
+      "measured": false
+    },
+    {
+      "case_id": "X-03",
+      "category": "malformed",
+      "requirements": [
+        "FR-026"
+      ],
+      "status": "pass",
+      "failed_layer": null,
+      "violations": [],
+      "semantic": {
+        "intent": 0.4,
+        "due_at": 0.4,
+        "keywords": 0.2,
+        "recall": 1.0,
+        "score": 1.0
+      },
+      "fallback": false,
+      "fallback_reason": null,
+      "decision": {
+        "intent": "clarify",
+        "task": null,
+        "due_at": null,
+        "target_id": null,
+        "snooze_minutes": null,
+        "clarification_question": "That request is too long for me to handle. Please send a shorter reminder request (under 2,000 characters).",
+        "refusal_reason": null
+      },
+      "error": null,
+      "raw_response_ref": "raw/X-03.json",
+      "attempts": 0,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_ms": 0,
+      "measured": false
+    },
+    {
+      "case_id": "R-01",
+      "category": "reschedule_snooze",
+      "requirements": [
+        "FR-010",
+        "FR-023",
+        "FR-025"
+      ],
+      "status": "infra_error",
+      "failed_layer": null,
+      "violations": [],
+      "semantic": null,
+      "fallback": false,
+      "fallback_reason": null,
+      "decision": null,
+      "error": {
+        "status": "infra_error",
+        "category": "auth",
+        "field": null,
+        "message": "authentication failed: AuthenticationError (HTTP 401)",
+        "attempts": 1
+      },
+      "raw_response_ref": "raw/R-01.json",
+      "attempts": 1,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_ms": 197,
+      "measured": false
+    },
+    {
+      "case_id": "R-02",
+      "category": "reschedule_snooze",
+      "requirements": [
+        "FR-010",
+        "FR-011",
+        "FR-024"
+      ],
+      "status": "infra_error",
+      "failed_layer": null,
+      "violations": [],
+      "semantic": null,
+      "fallback": false,
+      "fallback_reason": null,
+      "decision": null,
+      "error": {
+        "status": "infra_error",
+        "category": "auth",
+        "field": null,
+        "message": "authentication failed: AuthenticationError (HTTP 401)",
+        "attempts": 1
+      },
+      "raw_response_ref": "raw/R-02.json",
+      "attempts": 1,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_ms": 193,
+      "measured": false
+    },
+    {
+      "case_id": "R-03",
+      "category": "reschedule_snooze",
+      "requirements": [
+        "FR-025",
+        "FR-010"
+      ],
+      "status": "infra_error",
+      "failed_layer": null,
+      "violations": [],
+      "semantic": null,
+      "fallback": false,
+      "fallback_reason": null,
+      "decision": null,
+      "error": {
+        "status": "infra_error",
+        "category": "auth",
+        "field": null,
+        "message": "authentication failed: AuthenticationError (HTTP 401)",
+        "attempts": 1
+      },
+      "raw_response_ref": "raw/R-03.json",
+      "attempts": 1,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_ms": 298,
+      "measured": false
+    },
+    {
+      "case_id": "G-01",
+      "category": "guardrail",
+      "requirements": [
+        "FR-027",
+        "FR-013"
+      ],
+      "status": "infra_error",
+      "failed_layer": null,
+      "violations": [],
+      "semantic": null,
+      "fallback": false,
+      "fallback_reason": null,
+      "decision": null,
+      "error": {
+        "status": "infra_error",
+        "category": "auth",
+        "field": null,
+        "message": "authentication failed: AuthenticationError (HTTP 401)",
+        "attempts": 1
+      },
+      "raw_response_ref": "raw/G-01.json",
+      "attempts": 1,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_ms": 208,
+      "measured": false
+    },
+    {
+      "case_id": "G-02",
+      "category": "guardrail",
+      "requirements": [
+        "FR-028",
+        "FR-013"
+      ],
+      "status": "infra_error",
+      "failed_layer": null,
+      "violations": [],
+      "semantic": null,
+      "fallback": false,
+      "fallback_reason": null,
+      "decision": null,
+      "error": {
+        "status": "infra_error",
+        "category": "auth",
+        "field": null,
+        "message": "authentication failed: AuthenticationError (HTTP 401)",
+        "attempts": 1
+      },
+      "raw_response_ref": "raw/G-02.json",
+      "attempts": 1,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_ms": 204,
+      "measured": false
+    },
+    {
+      "case_id": "G-03",
+      "category": "guardrail",
+      "requirements": [
+        "FR-029",
+        "FR-013"
+      ],
+      "status": "infra_error",
+      "failed_layer": null,
+      "violations": [],
+      "semantic": null,
+      "fallback": false,
+      "fallback_reason": null,
+      "decision": null,
+      "error": {
+        "status": "infra_error",
+        "category": "auth",
+        "field": null,
+        "message": "authentication failed: AuthenticationError (HTTP 401)",
+        "attempts": 1
+      },
+      "raw_response_ref": "raw/G-03.json",
+      "attempts": 1,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_ms": 205,
+      "measured": false
+    },
+    {
+      "case_id": "G-04",
+      "category": "guardrail",
+      "requirements": [
+        "FR-029",
+        "FR-005",
+        "FR-008"
+      ],
+      "status": "infra_error",
+      "failed_layer": null,
+      "violations": [],
+      "semantic": null,
+      "fallback": false,
+      "fallback_reason": null,
+      "decision": null,
+      "error": {
+        "status": "infra_error",
+        "category": "auth",
+        "field": null,
+        "message": "authentication failed: AuthenticationError (HTTP 401)",
+        "attempts": 1
+      },
+      "raw_response_ref": "raw/G-04.json",
+      "attempts": 1,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cost_usd": 0.0,
+      "latency_ms": 171,
+      "measured": false
+    }
+  ],
+  "totals": {
+    "total": 26,
+    "passed": 2,
+    "failed": 0,
+    "input_error": 0,
+    "infra_error": 24,
+    "not_run": 0,
+    "fallbacks": 0,
+    "denominator": 2,
+    "pass_rate": 1.0,
+    "guardrail_total": 4,
+    "guardrail_passed": 0
+  },
+  "cost": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "estimated_usd": 0.0,
+    "project_spend_before_usd": 0.0,
+    "preflight_estimate_usd": 0.0162882
+  },
+  "latency": {
+    "measured_cases": 0,
+    "p95_ms": null,
+    "within_10s_rate": null,
+    "sc006_met": null
+  },
+  "aborted": false,
+  "abort_reason": null,
+  "partial": false,
+  "verdict": "FAIL",
+  "verdict_reasons": [
+    "guardrail cases passed 0/4 (100% required)",
+    "24 infra_error cases (at most 2 allowed)"
+  ]
+}

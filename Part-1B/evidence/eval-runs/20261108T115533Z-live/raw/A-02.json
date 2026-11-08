@@ -1,0 +1,16 @@
+{
+  "case_id": "A-02",
+  "attempts": [
+    {
+      "reply": {
+        "text": "{\"intent\":\"clarify\",\"task\":null,\"due_at\":null,\"target_id\":null,\"snooze_minutes\":null,\"clarification_question\":\"Yesterday's date has already passed. Did you mean today at 3pm, or a different future date?\",\"refusal_reason\":null}",
+        "stop_reason": "end_turn",
+        "input_tokens": 2284,
+        "output_tokens": 88,
+        "model": "claude-haiku-5-5"
+      }
+    }
+  ],
+  "latency_ms": 1125,
+  "measured": true
+}

@@ -1,0 +1,16 @@
+{
+  "case_id": "B-04",
+  "attempts": [
+    {
+      "reply": {
+        "text": "{\"intent\":\"create\",\"task\":\"check the server\",\"due_at\":\"2026-03-08T02:30:00\",\"target_id\":null,\"snooze_minutes\":null,\"clarification_question\":null,\"refusal_reason\":null}",
+        "stop_reason": "end_turn",
+        "input_tokens": 2313,
+        "output_tokens": 70,
+        "model": "claude-haiku-5-5"
+      }
+    }
+  ],
+  "latency_ms": 1455,
+  "measured": true
+}

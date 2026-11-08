@@ -1,0 +1,16 @@
+{
+  "case_id": "N-05",
+  "attempts": [
+    {
+      "reply": {
+        "text": "{\"intent\":\"create\",\"task\":\"water the plants\",\"due_at\":\"2026-11-11T09:00:00\",\"target_id\":null,\"snooze_minutes\":null,\"clarification_question\":null,\"refusal_reason\":null}",
+        "stop_reason": "end_turn",
+        "input_tokens": 2278,
+        "output_tokens": 71,
+        "model": "claude-haiku-5-5"
+      }
+    }
+  ],
+  "latency_ms": 1003,
+  "measured": true
+}

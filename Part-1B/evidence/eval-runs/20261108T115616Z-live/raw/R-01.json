@@ -1,0 +1,16 @@
+{
+  "case_id": "R-01",
+  "attempts": [
+    {
+      "reply": {
+        "text": "{\"intent\":\"reschedule\",\"task\":null,\"due_at\":\"2026-11-13T16:00:00\",\"target_id\":\"r1\",\"snooze_minutes\":null,\"clarification_question\":null,\"refusal_reason\":null}",
+        "stop_reason": "end_turn",
+        "input_tokens": 2356,
+        "output_tokens": 72,
+        "model": "claude-haiku-5-5"
+      }
+    }
+  ],
+  "latency_ms": 1010,
+  "measured": true
+}

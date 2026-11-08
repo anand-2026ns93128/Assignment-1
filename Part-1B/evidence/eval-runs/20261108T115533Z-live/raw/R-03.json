@@ -1,0 +1,16 @@
+{
+  "case_id": "R-03",
+  "attempts": [
+    {
+      "reply": {
+        "text": "{\"intent\":\"clarify\",\"task\":null,\"due_at\":null,\"target_id\":null,\"snooze_minutes\":null,\"clarification_question\":\"I can't find a gym reminder in your list. Could you tell me the task or time of the reminder you want to snooze?\",\"refusal_reason\":null}",
+        "stop_reason": "end_turn",
+        "input_tokens": 2282,
+        "output_tokens": 94,
+        "model": "claude-haiku-5-5"
+      }
+    }
+  ],
+  "latency_ms": 968,
+  "measured": true
+}

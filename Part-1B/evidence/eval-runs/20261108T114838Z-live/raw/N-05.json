@@ -1,0 +1,14 @@
+{
+  "case_id": "N-05",
+  "attempts": [
+    {
+      "error": {
+        "category": "auth",
+        "message": "authentication failed: AuthenticationError (HTTP 401)",
+        "retryable": false
+      }
+    }
+  ],
+  "latency_ms": 201,
+  "measured": false
+}

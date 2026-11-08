@@ -1,0 +1,16 @@
+{
+  "case_id": "X-02",
+  "attempts": [
+    {
+      "reply": {
+        "text": "{\"intent\":\"clarify\",\"task\":null,\"due_at\":null,\"target_id\":null,\"snooze_minutes\":null,\"clarification_question\":\"Sorry, I didn't understand that. What would you like to be reminded about, and when?\",\"refusal_reason\":null}",
+        "stop_reason": "end_turn",
+        "input_tokens": 2279,
+        "output_tokens": 85,
+        "model": "claude-haiku-5-5"
+      }
+    }
+  ],
+  "latency_ms": 1124,
+  "measured": true
+}

@@ -1,0 +1,16 @@
+{
+  "case_id": "R-03",
+  "attempts": [
+    {
+      "reply": {
+        "text": "{\"intent\":\"clarify\",\"task\":null,\"due_at\":null,\"target_id\":null,\"snooze_minutes\":null,\"clarification_question\":\"I don't see any existing reminders to snooze. Could you tell me what you'd like to be reminded about and when?\",\"refusal_reason\":null}",
+        "stop_reason": "end_turn",
+        "input_tokens": 2282,
+        "output_tokens": 93,
+        "model": "claude-haiku-5-5"
+      }
+    }
+  ],
+  "latency_ms": 1017,
+  "measured": true
+}

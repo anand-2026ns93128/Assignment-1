@@ -1,0 +1,16 @@
+{
+  "case_id": "A-01",
+  "attempts": [
+    {
+      "reply": {
+        "text": "{\"intent\":\"clarify\",\"task\":\"call Raj\",\"due_at\":null,\"target_id\":null,\"snooze_minutes\":null,\"clarification_question\":\"Do you mean 5 AM or 5 PM today?\",\"refusal_reason\":null}",
+        "stop_reason": "end_turn",
+        "input_tokens": 2278,
+        "output_tokens": 79,
+        "model": "claude-haiku-5-5"
+      }
+    }
+  ],
+  "latency_ms": 1124,
+  "measured": true
+}

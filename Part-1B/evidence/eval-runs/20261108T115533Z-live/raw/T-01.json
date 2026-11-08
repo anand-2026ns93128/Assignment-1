@@ -1,0 +1,16 @@
+{
+  "case_id": "T-01",
+  "attempts": [
+    {
+      "reply": {
+        "text": "{\"intent\":\"clarify\",\"task\":\"call the dentist\",\"due_at\":null,\"target_id\":null,\"snooze_minutes\":null,\"clarification_question\":\"What time would you like to be reminded to call the dentist?\",\"refusal_reason\":null}",
+        "stop_reason": "end_turn",
+        "input_tokens": 2275,
+        "output_tokens": 79,
+        "model": "claude-haiku-5-5"
+      }
+    }
+  ],
+  "latency_ms": 892,
+  "measured": true
+}

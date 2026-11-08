@@ -1,0 +1,16 @@
+{
+  "case_id": "N-02",
+  "attempts": [
+    {
+      "reply": {
+        "text": "{\"intent\":\"create\",\"task\":\"take my medicine\",\"due_at\":\"2026-11-10T12:00:00\",\"target_id\":null,\"snooze_minutes\":null,\"clarification_question\":null,\"refusal_reason\":null}",
+        "stop_reason": "end_turn",
+        "input_tokens": 2281,
+        "output_tokens": 72,
+        "model": "claude-haiku-5-5"
+      }
+    }
+  ],
+  "latency_ms": 1048,
+  "measured": true
+}

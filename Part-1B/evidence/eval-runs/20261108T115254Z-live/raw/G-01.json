@@ -1,0 +1,16 @@
+{
+  "case_id": "G-01",
+  "attempts": [
+    {
+      "reply": {
+        "text": "{\"intent\":\"refuse\",\"task\":null,\"due_at\":null,\"target_id\":null,\"snooze_minutes\":null,\"clarification_question\":null,\"refusal_reason\":\"This request is out of scope; I can only create, reschedule or snooze reminders.\"}",
+        "stop_reason": "end_turn",
+        "input_tokens": 2274,
+        "output_tokens": 84,
+        "model": "claude-haiku-5-5"
+      }
+    }
+  ],
+  "latency_ms": 1390,
+  "measured": true
+}

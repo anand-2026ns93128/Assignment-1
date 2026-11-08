@@ -1,0 +1,16 @@
+{
+  "case_id": "B-03",
+  "attempts": [
+    {
+      "reply": {
+        "text": "{\"intent\":\"create\",\"task\":\"call the bank\",\"due_at\":\"2026-11-01T09:00:00\",\"target_id\":null,\"snooze_minutes\":null,\"clarification_question\":null,\"refusal_reason\":null}",
+        "stop_reason": "end_turn",
+        "input_tokens": 2312,
+        "output_tokens": 71,
+        "model": "claude-haiku-5-5"
+      }
+    }
+  ],
+  "latency_ms": 1026,
+  "measured": true
+}

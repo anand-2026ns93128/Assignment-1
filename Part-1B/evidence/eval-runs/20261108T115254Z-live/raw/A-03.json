@@ -1,0 +1,16 @@
+{
+  "case_id": "A-03",
+  "attempts": [
+    {
+      "reply": {
+        "text": "{\"intent\":\"clarify\",\"task\":\"lock the gate\",\"due_at\":null,\"target_id\":null,\"snooze_minutes\":null,\"clarification_question\":\"It is already past 20:00 tonight. Did you want the reminder for tomorrow evening (2026-11-11 at 18:00), or at a different time?\",\"refusal_reason\":null}",
+        "stop_reason": "end_turn",
+        "input_tokens": 2278,
+        "output_tokens": 111,
+        "model": "claude-haiku-5-5"
+      }
+    }
+  ],
+  "latency_ms": 1134,
+  "measured": true
+}

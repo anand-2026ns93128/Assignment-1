@@ -13,7 +13,7 @@ This is the human-readable log of approvals, quality-gate runs and evaluation ru
   - `specs/001-nl-reminder-agent/tasks.md` (T001 to T066)
   - `.specify/memory/constitution.md` v1.0.0
 - **Decision recorded with the approval**: analysis finding U4 is resolved by keeping example output strings of 30 or more characters **out** of the system prompt, so the FR-046 leak check stays strict. No spec change was needed.
-- **Constitution I**: no application, prompt or evaluation code existed before this entry.
+- **Constitution I committed the all changes and 
 
 ## Setup: SDK feature check (T006, offline, no API call)
 
@@ -74,3 +74,8 @@ Project cap: USD 5.00. The cap is enforced automatically before every live run (
   - `reminder-agent --text "" ...` printed a clarify decision with exit 0. The empty-text check returns before any model client is built, so no model call is made; the unit test with `NoCallClient` covers this (AC-22).
 - **T066, final gates** (`run_harness.py --final`, Python 3.11.9): **PASS**. ruff, bandit, pytest (233 tests), clock-ban, secret-scan and python all pass, and coverage is 92.48% (informational). Evidence: `evidence/harness-results/20261108T094402Z/`.
 - **No live evaluation has been run.** The first live run is a manual step for the owner. Before it, re-check the `claude-haiku-5-5` prices in `config/settings.toml` against the live pricing page.
+- Gate run 20261108T114434Z: **PASS** (ruff PASS, bandit PASS, pytest PASS, clock_ban PASS, secret_scan PASS, python PASS); python 3.11.9; evidence `evidence/harness-results/20261108T114434Z`
+
+## Evaluation runs (final)
+
+- Eval replay run `20261108T115616Z-live-replay`: **PASS**, pass rate 26/26 (100.0%), guardrails 4/4, infra_error 0, fallbacks 0, cost $0.006443, evidence `evidence/eval-runs/20261108T115616Z-live-replay`

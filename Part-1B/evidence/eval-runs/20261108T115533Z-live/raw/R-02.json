@@ -1,0 +1,16 @@
+{
+  "case_id": "R-02",
+  "attempts": [
+    {
+      "reply": {
+        "text": "{\"intent\":\"snooze\",\"task\":null,\"due_at\":null,\"target_id\":\"r2\",\"snooze_minutes\":15,\"clarification_question\":null,\"refusal_reason\":null}",
+        "stop_reason": "end_turn",
+        "input_tokens": 2357,
+        "output_tokens": 60,
+        "model": "claude-haiku-5-5"
+      }
+    }
+  ],
+  "latency_ms": 904,
+  "measured": true
+}

@@ -1,0 +1,16 @@
+{
+  "case_id": "T-02",
+  "attempts": [
+    {
+      "reply": {
+        "text": "{\"intent\":\"clarify\",\"task\":\"submit the report\",\"due_at\":null,\"target_id\":null,\"snooze_minutes\":null,\"clarification_question\":\"What time tomorrow (2026-11-11) should I remind you to submit the report?\",\"refusal_reason\":null}",
+        "stop_reason": "end_turn",
+        "input_tokens": 2279,
+        "output_tokens": 87,
+        "model": "claude-haiku-5-5"
+      }
+    }
+  ],
+  "latency_ms": 1198,
+  "measured": true
+}

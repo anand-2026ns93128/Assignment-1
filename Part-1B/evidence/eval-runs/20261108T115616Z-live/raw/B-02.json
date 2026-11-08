@@ -1,0 +1,16 @@
+{
+  "case_id": "B-02",
+  "attempts": [
+    {
+      "reply": {
+        "text": "{\"intent\":\"create\",\"task\":\"pay rent\",\"due_at\":\"2026-02-01T08:00:00\",\"target_id\":null,\"snooze_minutes\":null,\"clarification_question\":null,\"refusal_reason\":null}",
+        "stop_reason": "end_turn",
+        "input_tokens": 2280,
+        "output_tokens": 71,
+        "model": "claude-haiku-5-5"
+      }
+    }
+  ],
+  "latency_ms": 1020,
+  "measured": true
+}

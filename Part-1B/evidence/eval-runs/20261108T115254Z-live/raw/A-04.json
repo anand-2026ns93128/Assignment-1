@@ -1,0 +1,16 @@
+{
+  "case_id": "A-04",
+  "attempts": [
+    {
+      "reply": {
+        "text": "{\"intent\":\"clarify\",\"task\":null,\"due_at\":null,\"target_id\":null,\"snooze_minutes\":null,\"clarification_question\":\"You said tomorrow morning but also 8pm, which conflict. Should I remind you at 8am or 8pm tomorrow?\",\"refusal_reason\":null}",
+        "stop_reason": "end_turn",
+        "input_tokens": 2286,
+        "output_tokens": 100,
+        "model": "claude-haiku-5-5"
+      }
+    }
+  ],
+  "latency_ms": 1215,
+  "measured": true
+}
