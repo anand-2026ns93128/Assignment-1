@@ -122,4 +122,45 @@ Final run 20261107T171956Z (Python 3.11.9): ruff PASS · bandit PASS (0 medium/h
 209 low) · pytest PASS (198 tests, 0 failures) · coverage 98.78% (threshold 90%) ·
 Python check PASS · **Overall PASS**
 
+
 ## 7. Human review and decision
+
+**What I tested by hand:**
+I manually reviewed the Smart Todo application to check its main user-facing
+behaviour. I focused on whether the application behaved correctly.
+
+
+**Did it behave as specified:**
+The behaviour I reviewed appeared consistent with the specification. In
+particular, the task status transitions follow the allowed rules:
+todo → in_progress, in_progress → done, and todo → done. Invalid transitions
+are rejected.
+
+**Test I checked against its acceptance criterion:**
+I checked test_AC27_done_to_todo_rejected against AC-27. The test starts with a
+task in status done, runs "status 1 todo", and checks that the command fails
+with exit code 1, prints nothing to normal output, shows the exact error message
+"Error: cannot change status of task 1 from done to todo.", and leaves the data
+file unchanged. This matched the acceptance criterion. The ALLOWED_TRANSITIONS
+definition also remained unchanged when the Ruff formatting issue was corrected.
+
+**Decision: ACCEPT, with limitations.**
+The final automated harness run (20261107T171956Z) passed all five gates:
+Python 3.11.9, Ruff, Bandit, pytest (198 tests), and 98.78% coverage. My review
+of the specified status-transition behaviour was also consistent with FR-010. I
+therefore accept the implementation for the scope of this assignment, not as a
+claim that it is production-ready.
+
+**Limitations and residual risks:**
+The project has been checked against its defined requirements and automated
+gates, but that does not prove that every real-world usage scenario has been
+covered. The application may still have usability issues or edge cases that
+were not exercised during testing. The reported Bandit and test corrections
+should also be distinguished from individually recorded harness failures and
+repairs.
+
+**Before real users relied on it, I would add:**
+Broader end-to-end and user-acceptance testing, tests for more edge cases and
+invalid inputs, and a review of how the application handles errors and
+unexpected data. I would also improve user documentation and carry out a
+security and usability review.
