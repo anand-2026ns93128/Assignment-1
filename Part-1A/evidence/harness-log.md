@@ -1,116 +1,125 @@
-\# Part 1A – Harness Log: Smart Todo CLI
+# Part 1A – Harness Log: Smart Todo CLI
+
+## 1. Context
+
+My Smart Todo app helps users create, organize, prioritize, update, and track
+their daily tasks efficiently. It is designed for students, professionals, and
+anyone who wants a simple and reliable way to manage daily activities and
+improve productivity.
+
+I selected the Todo problem because it is practical, easy to understand, and
+represents a real-world application with clear functional requirements. It also
+provides opportunities to implement CRUD operations, input validation, task
+management, and automated testing. The Rate Limiter is more focused on
+infrastructure and traffic management, whereas Todo allowed me to demonstrate a
+complete application development workflow.
+
+- Spec: Part-1A/specs/001-smart-todo-cli/spec.md (59 acceptance criteria, 19 functional requirements, 64 tasks)
+- Coding agent: Claude Code
+- Spec Kit steps: constitution and specify on 5 Nov; clarify, plan, tasks and analyze on 7 Nov; implement on 7 Nov
+
+The most useful aspect of Spec Kit was its structured, specification-driven
+development approach. Instead of immediately asking the coding agent to generate
+code, I first defined the requirements, clarified the technical approach, and
+established implementation tasks. I found it particularly useful that the
+workflow separates specification, planning, task breakdown, and implementation.
+This makes AI-assisted development more predictable, reduces misunderstandings,
+and makes it easier to validate the final application against its original
+requirements.
+
+## 2. Initial generation
+
+Before running /speckit-implement, I instructed the coding agent to implement all
+tasks in tasks.md in the specified order and follow the test-first approach. I
+explicitly told it not to run the harness, not to perform a final
+lint/security/coverage cleanup, and never to modify, skip, or weaken tests or
+gate settings. The reason was to preserve the coding agent's first
+implementation without artificially improving its results to pass the quality
+checks. I wanted the independent harness to evaluate the actual output
+objectively. This ensures that the test results reflect genuine code quality
+rather than changes made by the agent to satisfy the evaluator.
+
+- Initial generation: commit tagged `1A-initial-generation`, snapshot in `evidence/initial-generation/src`
+
+## 3. Harness gates
+
+| Gate | Why it matters for Smart Todo |
+|------|-------------------------------|
+| Ruff | Identifies Python coding errors, unused imports, and style inconsistencies, keeping the code clean and maintainable. |
+| Bandit | Checks for common security vulnerabilities, particularly important when handling user inputs and application data. |
+| Pytest | Verifies that task creation, updating, deletion, listing, and validation work correctly. |
+| Coverage ≥ 90% | Ensures that most application logic is tested, reducing the risk of bugs in task-management functionality. |
+| Python 3.11 | Ensures compatibility with the specified runtime and consistent application behaviour across development and execution environments. |
+
+## 4. Run history
+
+| # | Run (UTC) | Python | Ruff | Bandit (med/high · low) | Pytest (tests) | Coverage | Python check | Overall |
+|---|---|---|---|---|---|---|---|---|
+| 1 | 20261107T161924Z | 3.13.2 | PASS | PASS (0 · 28) | PASS (10) | FAIL (report missing) | WARN | FAIL |
+| 2 | 20261107T162113Z | 3.13.2 | FAIL | PASS (0 · 61) | PASS (39) | PASS 92.39% | WARN | FAIL |
+| 3 | 20261107T162144Z | 3.13.2 | PASS | PASS (0 · 61) | PASS (39) | PASS 92.39% | WARN | PASS |
+| 4 | 20261107T163332Z | 3.13.2 | PASS | PASS (0 · 102) | PASS (87) | PASS 95.15% | WARN | PASS |
+| 5 | 20261107T163622Z | 3.13.2 | PASS | PASS (0 · 146) | PASS (136) | PASS 97.51% | WARN | PASS |
+| 6 | 20261107T163721Z | 3.13.2 | FAIL | PASS (0 · 154) | PASS (155) | PASS 98.00% | WARN | FAIL |
+| 7 | 20261107T163741Z | 3.13.2 | PASS | PASS (0 · 154) | PASS (155) | PASS 98.00% | WARN | PASS |
+| 8 | 20261107T163841Z | 3.13.2 | PASS | PASS (0 · 178) | PASS (176) | PASS 98.77% | WARN | PASS |
+| 9 | 20261107T163924Z | 3.13.2 | PASS | PASS (0 · 188) | PASS (184) | PASS 98.78% | WARN | PASS |
+| 10 | 20261107T164012Z | 3.13.2 | PASS | PASS (0 · 200) | PASS (190) | PASS 98.78% | WARN | PASS |
+| 11 | 20261107T164124Z (final) | 3.13.2 | PASS | PASS (0 · 209) | PASS (198) | PASS 98.78% | FAIL | FAIL |
+| 12 | 20261107T171956Z (final) | 3.11.9 | PASS | PASS (0 · 209) | PASS (198) | PASS 98.78% | PASS | PASS |
+
+## 5. Failure → repair cycles
+
+### Cycle 1: Coverage failure
+- Failing run: 20261107T161924Z
+- Fixed in run: 20261107T162113Z
+
+The coverage gate reported 0% because the application code had not yet been
+implemented or imported, so no coverage data could be collected. After the
+application code and its tests were created, coverage was measured successfully
+and reached 92.39%.
+
+### Cycle 2: Ruff errors in errors.py and test_core.py
+- Failing run: 20261107T162113Z
+- Fixed in run: 20261107T162144Z
+
+Ruff reported two issues: an E501 line-length violation in
+src/smart_todo/errors.py and a UP012 warning about an unnecessary UTF-8 encoding
+argument in tests/unit/test_core.py. The coding agent corrected the line
+formatting and removed the unnecessary argument.
 
 
+### Cycle 3: Ruff error in models.py
+- Failing run: 20261107T163721Z
+- Fixed in run: 20261107T163741Z
 
-\## 1. Context
+Ruff reported another E501 line-length violation in src/smart_todo/models.py,
+in the ALLOWED_TRANSITIONS definition. The coding agent reformatted the
+definition across multiple lines while keeping the same three allowed
+transitions.
 
-<!--
+### Cycle 4: Python version mismatch
+- Failing run: 20261107T164124Z
+- Fixed in run: 20261107T171956Z
 
-* This App is for Smart Todo CLI on Python 3.11 and standard library only.
-* Spec path = Part-1A/specs/001-smart-todo-cli/spec.md, which grew from 54 to 59 ACs after analyze with 19 FRs
-* 64 taske used and gent used is Claude Code
-* Dates: 
-
-&#x09;Constitution and spec: 5 Nov
-
-&#x09;Clarify, plan, tasks and analyze: 7 Nov, early morning
-
-&#x09;Implementation: 7 Nov, afternoon
-
-* Clarify asked no questions. It left two low-impact items for the plan.
-* Analyze found CRITICAL, HIGH and MEDIUM issues (C1–C3, I1, among others), and you had all 10 fixed. I1 changed the spec, with a dated note. -->
-
+The final harness run failed the Python version gate because the environment was
+using Python 3.13.2 instead of the required Python 3.11; the other four gates
+passed. Python 3.11 was not installed, so I installed Python 3.11.9 using
+winget. All five gates then passed.
 
 
-\## 2. Initial generation
+### Additional agent-reported fixes
+Claude Code also reported fixing a Bandit finding related to xml.etree and two
+test mistakes. These changes were mentioned in the agent's summary but were not
+separately identified in the harness run history, so I am recording them as
+agent-reported fixes rather than independently verified failure-and-repair
+cycles. The final harness run nevertheless confirmed that Bandit passed with
+zero medium/high findings and that all 198 tests passed.
 
-<!-- 
+## 6. Final automated result
 
-* Tag 1A-initial-generation on branch 001-smart-todo-cli.
-* Your instruction to the agent: don’t run the final harness, and never weaken tests.
-* The task list still required harness runs at each phase checkpoint, so runs happened during implementation. -->
+Final run 20261107T171956Z (Python 3.11.9): ruff PASS · bandit PASS (0 medium/high,
+209 low) · pytest PASS (198 tests, 0 failures) · coverage 98.78% (threshold 90%) ·
+Python check PASS · **Overall PASS**
 
-
-
-\## 3. Harness gates
-
-<!-- 
-
-* The five gates: ruff, bandit (0 medium/high), pytest, coverage at least 90%, and Python 3.11 -->
-
-
-
-\## 4. Run history
-
-<!-- 
-
-* Mode                 LastWriteTime         Length Name
-* \----                 -------------         ------ ----
-* d-----         11/7/2026   6:35 PM                20261107T1619
-* &#x20;                                                 24Z
-* d-----         11/7/2026   6:35 PM                20261107T1621
-* &#x20;                                                 13Z
-* d-----         11/7/2026   6:35 PM                20261107T1621
-* &#x20;                                                 44Z
-* d-----         11/7/2026   6:35 PM                20261107T1633
-* &#x20;                                                 32Z
-* d-----         11/7/2026   6:35 PM                20261107T1636
-* &#x20;                                                 22Z
-* d-----         11/7/2026   6:35 PM                20261107T1637
-* &#x20;                                                 21Z
-* d-----         11/7/2026   6:35 PM                20261107T1637
-* &#x20;                                                 41Z
-* d-----         11/7/2026   6:35 PM                20261107T1638
-* &#x20;                                                 41Z
-* d-----         11/7/2026   6:35 PM                20261107T1639
-* &#x20;                                                 24Z
-* d-----         11/7/2026   6:35 PM                20261107T1640
-* &#x20;                                                 12Z
-* d-----         11/7/2026   6:35 PM                20261107T1641
-* &#x20;                                                 24Z
-* d-----         11/7/2026   6:35 PM                20261107T1719
-* &#x20;                                                 56Z -->
-
-
-
-\## 5. Failure → repair cycles
-
-<!--
-
-* Ruff: long lines, fixed by shortening the lines. The rule wasn’t disabled.
-* Bandit: xml.etree parsing of JUnit output was flagged MEDIUM. The parsing was switched to a regex.
-* Tests: the AC-21 test’s monkeypatch.undo() also undid the directory change, and an equal-priority ordering test expected the wrong order. Both were judged to be test errors and corrected. Verify this yourself in the diff.
-* Python: the --final run failed because 3.13.2 was installed. You installed 3.11.9 with winget and reran, and run 20261107T171956Z passed every gate. -->
-
-
-
-&#x20;     
-
-\## 6. Final automated result
-
-<!-- 
-
-* Ruff PASS
-* Bandit PASS (0 medium/high, 209 LOW)
-* 198 tests, 0 failures
-* Coverage 98.78%
-* Python 3.11.9
-* Overall PASS -->
-
-
-
-\## 7. Human review and decision
-
-<!--
-
-* The harness only checks what someone thought to test. A 100% pass means “the code does what the tests check”. It doesn’t mean the code is correct for every real use. A human reviewer looks for the gap between the two, then takes responsibility for the decision.
-* Using the app by hand. Automated tests use exact, planned inputs. A person tries things the way a real user would and notices things tests can’t judge: whether error messages are clear, whether the output is easy to read, whether a command feels natural.
-* Spot-checking the tests. A test called test\_AC05\_… could, in theory, check something weaker than AC-05 says. Opening a few and comparing them to the spec tells you whether the passing tests can be trusted. That matters most for the tests the agent changed during implementation.
-* Common limitations and risks for an app like this:
-
-  * Concurrency. If two terminals run the app at the same moment, both may read the file, change it and save. The second save overwrites the first, and a task is lost. Atomic writes stop a half-written file, but they don’t stop this. Your spec deliberately excluded concurrency
-  * Scale. The whole JSON file is read and rewritten on every command. That’s fine for hundreds of tasks, but it gets slower with very large lists.
-  * Platform. The harness ran only on your Windows machine with Python 3.11. Behaviour on Mac or Linux, for example line endings or file renaming, hasn’t been verified by a run.
-  * The 209 LOW bandit findings. Most are bandit rule B101, which flags every assert statement. Python can skip asserts when run in optimised mode, so bandit warns about them. In test files, asserts are the normal way to write tests, so reviewers usually accept them there. The question to ask yourself is whether any of the 209 are in src/ rather than tests/.
-  * Data safety. The app works on one local file, with no backup or undo. If the file is deleted or corrupted by something outside the app, the data is gone. The app detects corruption, but it can’t recover from it. -->
-
+## 7. Human review and decision
