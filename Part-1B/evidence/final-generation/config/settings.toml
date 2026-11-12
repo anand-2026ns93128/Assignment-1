@@ -1,0 +1,23 @@
+# Reminder agent configuration (research R-09). Precedence: CLI flag > environment > this file.
+# The API key is NEVER stored here: it is read only from ANTHROPIC_API_KEY (env or git-ignored .env).
+
+[model]
+name = "claude-haiku-5-5"
+max_tokens = 300            # Constitution X: must never exceed 300
+effort = "low"
+thinking = "disabled"
+timeout_seconds = 30
+# temperature: left at model default (not sent): claude-haiku-5-5 rejects temperature 0 — spec Change Log v1.2.
+# Set REMINDER_TEMPERATURE or --temperature only for a model that accepts it.
+
+# Pricing constants: the single place they are declared (Constitution Technology section).
+[pricing."claude-haiku-5-5"]
+input_per_mtok = 0.10
+output_per_mtok = 0.50
+long_context_threshold_tokens = 100000
+long_input_per_mtok = 0.50
+long_output_per_mtok = 2.50
+
+[budget]
+run_abort_usd = 0.50        # FR-042: stop a live run once its estimated cost exceeds this
+project_cap_usd = 5.00      # FR-047: refuse a live run if recorded spend + pre-flight would exceed this

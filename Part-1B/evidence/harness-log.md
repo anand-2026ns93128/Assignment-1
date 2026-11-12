@@ -1,4 +1,4 @@
-# Harness Log: Natural-Language Reminder Agent (Part 1B)
+﻿# Harness Log: Natural-Language Reminder Agent (Part 1B)
 
 This is the human-readable log of approvals, quality-gate runs and evaluation runs. Entries are appended in order and never rewritten.
 
@@ -13,7 +13,7 @@ This is the human-readable log of approvals, quality-gate runs and evaluation ru
   - `specs/001-nl-reminder-agent/tasks.md` (T001 to T066)
   - `.specify/memory/constitution.md` v1.0.0
 - **Decision recorded with the approval**: analysis finding U4 is resolved by keeping example output strings of 30 or more characters **out** of the system prompt, so the FR-046 leak check stays strict. No spec change was needed.
-- **Constitution I committed the all changes and 
+- **Constitution I**: no application, prompt or evaluation code existed before this entry.
 
 ## Setup: SDK feature check (T006, offline, no API call)
 
@@ -27,6 +27,7 @@ This is the human-readable log of approvals, quality-gate runs and evaluation ru
 ## Quality gate runs
 
 - Gate run 20261107T210751Z: **PASS** (ruff PASS, bandit PASS, pytest PASS, clock_ban PASS, secret_scan PASS, python PASS); python 3.11.9; evidence `evidence/harness-results/20261107T210751Z`
+- Gate run 20261108T114434Z: **PASS** (ruff PASS, bandit PASS, pytest PASS, clock_ban PASS, secret_scan PASS, python PASS); python 3.11.9; coverage 92.48% (informational); evidence `evidence/harness-results/20261108T114434Z`
 
 ## Reproducibility record (T061)
 
@@ -34,7 +35,7 @@ This is the human-readable log of approvals, quality-gate runs and evaluation ru
 
 - **Date**: 2026-11-08, taken **before any live evaluation run** (T062).
 - **Contents**: copies of `src/`, `.harness/`, `prompts/`, `schemas/`, `config/` and `evals/` in `evidence/initial-generation/`. There are 26 files; caches and `.env` are excluded.
-- **Commit**: taken from the working tree on top of `f93de80`. The implementation was not yet committed when the snapshot was made; the snapshot itself is the record of the initial generation.
+- **Commit**: taken from the working tree on top of `0358edf`. The implementation was not yet committed when the snapshot was made; the snapshot itself is the record of the initial generation.
 - **State at snapshot**: all user stories (US1 to US4) implemented, 233 offline tests passing, prompt version `v1`, schema version `1.0.0`.
 
 ### Live evaluation runs (manual)
@@ -43,11 +44,19 @@ The owner fills this in after each manual `python .harness/evaluate.py live` run
 
 | run_id | date | model | verdict | pass rate | infra_error | fallbacks | cost (USD) |
 |--------|------|-------|---------|-----------|-------------|-----------|------------|
-| | | | | | | | |
+| 20261108T114838Z-live | 2026-11-08 | claude-haiku-5-5 | FAIL | 2/2 | 24 (HTTP 401) | 0 | 0.000000 |
+| 20261108T115254Z-live | 2026-11-08 | claude-haiku-5-5 | PASS | 26/26 | 0 | 0 | 0.006442 |
+| 20261108T115533Z-live | 2026-11-08 | claude-haiku-5-5 | PASS | 26/26 | 0 | 0 | 0.006443 |
+| 20261108T115616Z-live | 2026-11-08 | claude-haiku-5-5 | PASS | 26/26 | 0 | 0 | 0.006443 |
+| 20261108T115616Z-live-replay (--final) | 2026-11-08 | claude-haiku-5-5 | PASS | 26/26 | 0 | 0 | 0 (replay, no API calls; `summary.md` shows the recorded run's estimate, $0.006443) |
 
 ### Final generation
 
 Manual step: after the final live run, copy `src/`, `.harness/`, `prompts/`, `schemas/`, `config/` and `evals/` to `evidence/final-generation/`. Then record the date, the commit and the run_id here.
+
+- `src/` copied 2026-11-08.
+- `.harness/`, `prompts/`, `schemas/`, `config/` and `evals/` copied 2026-11-12; unchanged since the final run.
+- Final run: `20261108T115616Z-live` (replay `--final`: PASS).
 
 ### Spend tracker
 
@@ -55,7 +64,10 @@ Project cap: USD 5.00. The cap is enforced automatically before every live run (
 
 | run_id | estimated cost (USD) | running total (USD) |
 |--------|----------------------|---------------------|
-| (no live runs yet) | 0.00 | 0.00 |
+| 20261108T114838Z-live | 0.000000 | 0.000000 |
+| 20261108T115254Z-live | 0.006442 | 0.006442 |
+| 20261108T115533Z-live | 0.006443 | 0.012885 |
+| 20261108T115616Z-live | 0.006443 | 0.019328 |
 - Gate run 20261108T094402Z (--final): **PASS** (ruff PASS, bandit PASS, pytest PASS, clock_ban PASS, secret_scan PASS, python PASS); python 3.11.9; evidence `evidence/harness-results/20261108T094402Z`
 
 ## Polish: offline validation (T063 to T066, 2026-11-08)
@@ -66,7 +78,7 @@ Project cap: USD 5.00. The cap is enforced automatically before every live run (
   - There are 4 inline `# nosec` (B404/B603 for fixed-argument `subprocess` calls), each with a justification comment on the line above. There is no project-wide suppression.
 - **T064, frozen dataset**: `python .harness/evaluate.py check-dataset` exits 0 and reports 26 cases with all category and tag minimums met.
   - **Frozen dataset sha256: `e7512a65595ced4ba6ef3be4b09b112fefaff8ae4c385f967ab6bed38613c4ef`**. Every evaluation report must show this hash unless a change is recorded in the spec's Evaluation Change Log (FR-043).
-- **T065, quickstart §2 (offline only; §3 and §4 are live and were skipped)**:
+- **T065, quickstart Â§2 (offline only; Â§3 and Â§4 are live and were skipped)**:
   - pytest: 233 passed, with 0 failures, errors or skips.
   - Gate script: PASS.
   - check-dataset: exit 0.
@@ -74,8 +86,11 @@ Project cap: USD 5.00. The cap is enforced automatically before every live run (
   - `reminder-agent --text "" ...` printed a clarify decision with exit 0. The empty-text check returns before any model client is built, so no model call is made; the unit test with `NoCallClient` covers this (AC-22).
 - **T066, final gates** (`run_harness.py --final`, Python 3.11.9): **PASS**. ruff, bandit, pytest (233 tests), clock-ban, secret-scan and python all pass, and coverage is 92.48% (informational). Evidence: `evidence/harness-results/20261108T094402Z/`.
 - **No live evaluation has been run.** The first live run is a manual step for the owner. Before it, re-check the `claude-haiku-5-5` prices in `config/settings.toml` against the live pricing page.
-- Gate run 20261108T114434Z: **PASS** (ruff PASS, bandit PASS, pytest PASS, clock_ban PASS, secret_scan PASS, python PASS); python 3.11.9; evidence `evidence/harness-results/20261108T114434Z`
 
-## Evaluation runs (final)
+## Model, configuration and threshold
 
-- Eval replay run `20261108T115616Z-live-replay`: **PASS**, pass rate 26/26 (100.0%), guardrails 4/4, infra_error 0, fallbacks 0, cost $0.006443, evidence `evidence/eval-runs/20261108T115616Z-live-replay`
+## Results by layer
+
+## Failures and repairs
+
+## Human review and decision
